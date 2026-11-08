@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "COR3 Helper",
+  "name": "COR3 Helper + TD Bot",
   "version": "1.7.0",
   "_version_note": "Kept for backward-compat: older extension versions fetch this file for update checks. Will be removed in a future release. Canonical version is in package.json.",
   "description": "Monitor markets, expeditions, daily ops, and get timer alerts for cor3.gg.",
@@ -23,7 +23,7 @@
   ],
   "devtools_page": "devtools.html",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "plan-bg.js"
   },
   "content_scripts": [
     {
@@ -50,6 +50,28 @@
         "errors.js",
         "ws-messages.js",
         "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://cor3.gg/*",
+        "https://*.cor3.gg/*"
+      ],
+      "js": [
+        "td/bot.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://cor3.gg/*",
+        "https://*.cor3.gg/*"
+      ],
+      "js": [
+        "td/kopru.js",
+        "planlayici.js"
       ],
       "run_at": "document_idle"
     }
@@ -80,6 +102,17 @@
       ],
       "matches": [
         "<all_urls>"
+      ]
+    },
+    {
+      "resources": [
+        "td/popup.html",
+        "td/popup.js",
+        "td/plan-ui.js"
+      ],
+      "matches": [
+        "https://cor3.gg/*",
+        "https://*.cor3.gg/*"
       ]
     }
   ]

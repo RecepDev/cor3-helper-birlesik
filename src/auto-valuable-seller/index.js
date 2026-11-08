@@ -16,7 +16,7 @@ window.addEventListener('message', function (event) {
         }
         setRunning(true);
         setMode('search');
-        runSearch().catch(function (err) {
+        runSearch(event.data.onlyServers).catch(function (err) {
             if (err.message !== 'Stopped') log('Search error: ' + err.message, 'error');
             signalDone();
         });
@@ -31,7 +31,7 @@ window.addEventListener('message', function (event) {
         setMode('seller');
         var sServers = event.data.selectedServers || [];
         var sDownloads = event.data.selectedDownloads || [];
-        runSeller(sServers, sDownloads).catch(function (err) {
+        runSeller(sServers, sDownloads, event.data.excludeMarkets || []).catch(function (err) {
             if (err.message !== 'Stopped') log('Seller error: ' + err.message, 'error');
             signalDone();
         });

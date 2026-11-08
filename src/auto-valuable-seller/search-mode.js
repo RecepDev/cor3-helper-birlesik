@@ -15,7 +15,7 @@ import { ensureServerAccess } from './server-access.js';
 import { getServerFiles, getServerLogs, filterValuableFiles, filterValuableLogs, getDownloadsFolder, getFileAnalysis } from './operations.js';
 import { fetchMaintenanceData } from './maintenance.js';
 
-export async function runSearch() {
+export async function runSearch(onlyServers) {
     log('=== Valuable Search Started ===', 'info');
     setCachedMapData(null);
 
@@ -44,6 +44,10 @@ export async function runSearch() {
         for (var sId in ALL_SERVERS) {
             mapServers.push({ id: sId, name: ALL_SERVERS[sId], isAccessible: false });
         }
+    }
+
+    if (Array.isArray(onlyServers)) {
+        mapServers = mapServers.filter(function (s) { return onlyServers.indexOf(s.id) !== -1; });
     }
 
     // Sort servers furthest-first (longer path = further) to reduce maintenance risk on closer servers

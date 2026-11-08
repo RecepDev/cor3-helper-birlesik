@@ -55,7 +55,12 @@ const staticFiles = [
     'src/standalone/ice-wall-solver.js',
     'src/standalone/simple-decrypt-solver.js',
     'src/standalone/daily-hack-solver.js',
+
+    'src/planlayici/planlayici.js',
+    'src/planlayici/plan-bg.js',
 ];
+
+const TD_KAYNAK = process.env.TD_KAYNAK || path.join(__dirname, '..', 'cor3-td-bot', 'eklenti');
 
 const staticDirs = [
     'icon',
@@ -90,6 +95,11 @@ function copyStaticFiles() {
         } else {
             fs.copyFileSync(src, dest);
         }
+    }
+
+    if (fs.existsSync(TD_KAYNAK)) {
+        copyDirSync(TD_KAYNAK, path.join(DIST, 'td'));
+        fs.rmSync(path.join(DIST, 'td', 'manifest.json'), { force: true });
     }
 
     for (const dir of staticDirs) {

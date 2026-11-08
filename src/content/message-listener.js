@@ -366,7 +366,7 @@ export function setupMessageListener() {
             const result = _automationEnqueue('auto-valuable', () => {
                 injectAutoValuableSeller();
                 setTimeout(() => {
-                    window.postMessage({ type: 'COR3_VALUABLE_START_SEARCH' }, '*');
+                    window.postMessage({ type: 'COR3_VALUABLE_START_SEARCH', onlyServers: request.onlyServers }, '*');
                 }, 500);
             });
             sendResponse({ success: true, queueResult: result });
@@ -380,7 +380,8 @@ export function setupMessageListener() {
                     window.postMessage({
                         type: 'COR3_VALUABLE_START_SELLER',
                         selectedServers: selServers,
-                        selectedDownloads: selDownloads
+                        selectedDownloads: selDownloads,
+                        excludeMarkets: request.excludeMarkets || []
                     }, '*');
                 }, 500);
             });

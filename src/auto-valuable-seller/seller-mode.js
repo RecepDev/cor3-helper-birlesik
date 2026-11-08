@@ -24,7 +24,8 @@ import {
 } from './operations.js';
 import { fetchMaintenanceData } from './maintenance.js';
 
-export async function runSeller(selectedServers, selectedDownloads) {
+export async function runSeller(selectedServers, selectedDownloads, excludeMarkets) {
+    excludeMarkets = excludeMarkets || [];
     log('=== Valuable Seller Started ===', 'info');
     setCachedMapData(null);
     clearDesktopToServerMap();
@@ -240,6 +241,7 @@ export async function runSeller(selectedServers, selectedDownloads) {
             if (!running) break;
 
             var market = MARKET_SELL_ORDER[mi];
+            if (excludeMarkets.indexOf(market.name) !== -1) { log(market.name + ': skipped (protected by planner)'); continue; }
             log('Checking ' + market.name + ' market for sellable items...');
 
             // Set endpoint to market server before requesting sellable items (HOME is default, skip)
