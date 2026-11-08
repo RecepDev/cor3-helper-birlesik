@@ -59,6 +59,7 @@ const staticFiles = [
     'src/planlayici/planlayici.js',
     'src/planlayici/plan-bg.js',
     'src/planlayici/td-ac.js',
+    'src/planlayici/gunluk.js',
 ];
 
 const TD_KAYNAK = process.env.TD_KAYNAK || path.join(__dirname, '..', 'cor3-td-bot', 'eklenti');

@@ -1,0 +1,1 @@
+chrome.storage.local.set({planMesgul:true}).then(()=>chrome.storage.local.get(['durum','automationQueueStatus','planDurum'])).then(r=>{const q=r.automationQueueStatus||{};const ok=!r.durum.macta&&!q.active&&!(q.queued||[]).length&&(r.planDurum.calisma||{}).adim==='bos'&&Date.now()-r.durum.zaman<15000;return ok?'GUVENLI':'bekle '+r.durum.sonIs+' q='+q.active})

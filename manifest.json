@@ -71,7 +71,8 @@
       ],
       "js": [
         "td/kopru.js",
-        "planlayici.js"
+        "planlayici.js",
+        "gunluk.js"
       ],
       "run_at": "document_idle"
     }
