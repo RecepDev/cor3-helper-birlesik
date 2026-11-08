@@ -106,6 +106,7 @@
     },
     {
       "resources": [
+        "popup.html",
         "td/popup.html",
         "td/popup.js",
         "td/plan-ui.js"
