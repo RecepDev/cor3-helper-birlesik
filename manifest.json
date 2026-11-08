@@ -110,7 +110,8 @@
         "popup.html",
         "td/popup.html",
         "td/popup.js",
-        "td/plan-ui.js"
+        "td/plan-ui.js",
+        "td/oneri-ui.js"
       ],
       "matches": [
         "https://cor3.gg/*",

@@ -14,8 +14,8 @@
     "019da731-2db5-7d76-9447-1ea3b9b78001": "soyuz",
     "019e4065-6ae8-760d-8724-58ab4f2cf7d7": "usol",
   };
-  const VARSAYILAN = { acik: false, oneri: true, payDk: 30, bilinmeyenDk: 0, jobPencereDk: 120, force: true, kismiForce: true, aralikDk: 30, haric: "" };
-  const ANAHTAR = ["marketData", "darkMarketData", "soyuzMarketData", "usolMarketData", "autoJobsTracker", "autoJobsQueue", "autoJobsRunning", "autoJobsDebugLogs", "autoJobsCompletedResults", "automationQueueStatus", "valuableSearchRunning", "valuableSellerRunning", "durum", "planAyar", "planOgrenme", "planCalisma"];
+  const VARSAYILAN = { acik: false, oneri: true, payDk: 30, bilinmeyenDk: 0, jobPencereDk: 120, force: true, kismiForce: true, gunluk: false, aralikDk: 30, haric: "" };
+  const ANAHTAR = ["marketData", "darkMarketData", "soyuzMarketData", "usolMarketData", "autoJobsTracker", "autoJobsQueue", "autoJobsRunning", "autoJobsDebugLogs", "autoJobsCompletedResults", "automationQueueStatus", "valuableSearchRunning", "valuableSellerRunning", "durum", "planAyar", "planOgrenme", "planCalisma", "dailyOpsData"];
 
   let ayar = { ...VARSAYILAN };
   let ogr = { surum: 2, tohum: false, isler: {}, gorulen: [], bakimlar: [], uyari: {}, basla: {} };
@@ -51,6 +51,8 @@
     if (!mk || !j || !j.id) return;
     if (ogr.gorulen.includes(j.id)) return;
     ogr.gorulen.push(j.id);
+    const z = Date.parse(zaman || "") || simdi();
+    if (!ogr.ilkJob || z < ogr.ilkJob) ogr.ilkJob = z;
     while (ogr.gorulen.length > 3000) ogr.gorulen.shift();
     const t = ogr.isler[mk] || (ogr.isler[mk] = {});
     for (const s of j.relatedServers || []) {
@@ -273,7 +275,7 @@
     for (const s of harita.servers) {
       if (s.id === home.id) continue;
       const D = sureTahmin(s);
-      const kayit = { id: s.id, ad: s.serverName, tip: s.serverTypeName || "", sureDk: dk(D.ms), kaynak: D.kaynak, uyari: s.timeUntilMaintenance || null, bakimBitis: s.maintenanceEndsAt || null, magazalar: [] };
+      const kayit = { id: s.id, ad: s.serverName, tip: s.serverTypeName || "", def: s.serverDefenceRate || 0, erisim: !!(s.isAccessible || s.hasAdminAccess), sureDk: dk(D.ms), kaynak: D.kaynak, uyari: s.timeUntilMaintenance || null, bakimBitis: s.maintenanceEndsAt || null, magazalar: [] };
       for (const m of magazalar) if (m.K.has(s.id)) kayit.magazalar.push(m.ad);
       if (s.maintenanceEndsAt && Date.parse(s.maintenanceEndsAt) > t) { kayit.durum = "bakımda"; kayit.neden = `${dk(Date.parse(s.maintenanceEndsAt) - t)} dk kaldı`; }
       else if (haric.has(s.serverName)) { kayit.durum = "korunan"; kayit.neden = "elle hariç"; }
@@ -412,9 +414,37 @@
     }
   };
 
+  let gunlukSon = 0;
+  const gunlukDene = async () => {
+    const d = depo.dailyOpsData;
+    if (!ayar.gunluk || dongude || !d || !otomasyonBos() || tdMacta()) return false;
+    const yeni = !d.hasClaimedToday || (d.lastClaimDate && d.lastClaimDate.slice(0, 10) < new Date().toISOString().slice(0, 10));
+    if (!yeni || (d.nextTaskTime && Date.parse(d.nextTaskTime) > simdi()) || simdi() - gunlukSon < 60 * 60000) return false;
+    gunlukSon = simdi();
+    dongude = true;
+    try {
+      await mesgul(true);
+      yaz("daily ops başlatılıyor");
+      await chrome.storage.sync.set({ autoDailyHackEnabled: true });
+      const r = await aktar({ action: "toggleDailyHackSolver", enabled: true });
+      if (!r.ok) throw new Error(r.hata || "başlatılamadı");
+      const bas = simdi();
+      while (simdi() - bas < 10 * 60000) {
+        await uyu(10000);
+        const s = await chrome.storage.sync.get("autoDailyHackEnabled");
+        if (!s.autoDailyHackEnabled) break;
+      }
+      const l = await chrome.storage.local.get("dailyHackLog");
+      yaz("daily ops: " + String(l.dailyHackLog || "bitti").split(/\r?\n/).filter(Boolean).slice(-1)[0].slice(0, 120));
+    } catch (e) { yaz("daily ops durdu: " + e.message); }
+    finally { await mesgul(false); dongude = false; }
+    return true;
+  };
+
   const tik = () => {
     if (simdi() - haritaZaman > 5 * 60000) haritaIste();
     durumYaz();
+    if (ayar.acik && !ayar.oneri && !dongude && depo.dailyOpsData && ayar.gunluk) gunlukDene();
     if (!ayar.acik || ayar.oneri || dongude) return;
     if (simdi() - (calisma.sonDongu || 0) < ayar.aralikDk * 60000) return;
     if (!sonHesap || !sonHesap.hazir || (!sonHesap.izinli.length && !sonHesap.forceOner.length)) return;
