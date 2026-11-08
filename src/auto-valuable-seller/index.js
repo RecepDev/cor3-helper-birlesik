@@ -48,6 +48,8 @@ window.addEventListener('message', function (event) {
         var fmServers = event.data.servers;
         if (fmServers && fmServers.length > 0) {
             forceMaintenanceBatch(fmServers);
+        } else {
+            window.postMessage({ type: 'COR3_VALUABLE_FORCE_MAINT_DONE', success: true }, '*');
         }
     }
 });

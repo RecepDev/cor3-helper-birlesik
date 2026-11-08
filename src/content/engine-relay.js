@@ -198,6 +198,7 @@ export function setupEngineRelay() {
             }
             chrome.storage.local.set({ valuableForceMaintenanceDone: fmDoneData });
             chrome.storage.local.remove('forceMaintenanceInProgress');
+            _automationFinish('auto-valuable-force');
         }
         if (event.data && event.data.type === 'COR3_VALUABLE_DONE') {
             chrome.storage.local.set({ valuableSearchRunning: false, valuableSellerRunning: false });

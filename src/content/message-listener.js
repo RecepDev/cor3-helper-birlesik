@@ -392,14 +392,18 @@ export function setupMessageListener() {
             _automationFinish('auto-valuable');
             sendResponse({ success: true });
         } else if (request.action === "forceMaintenanceBatch") {
-            injectAutoValuableSeller();
-            setTimeout(() => {
-                window.postMessage({
-                    type: 'COR3_VALUABLE_FORCE_MAINTENANCE_BATCH',
-                    servers: request.servers
-                }, '*');
-            }, 500);
-            sendResponse({ success: true });
+            ensureAntiAfkEnabled();
+            const fmServers = request.servers;
+            const result = _automationEnqueue('auto-valuable-force', () => {
+                injectAutoValuableSeller();
+                setTimeout(() => {
+                    window.postMessage({
+                        type: 'COR3_VALUABLE_FORCE_MAINTENANCE_BATCH',
+                        servers: fmServers
+                    }, '*');
+                }, 500);
+            });
+            sendResponse({ success: true, queueResult: result });
         } else if (request.action === "startIpSearch") {
             window.postMessage({ type: 'COR3_IP_SEARCH_START' }, '*');
             sendResponse({ success: true });

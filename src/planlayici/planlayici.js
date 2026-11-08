@@ -348,7 +348,7 @@
       await chrome.storage.local.set({ valuableSearchRunning: true, valuableSellerRunning: false });
       const r1 = await aktar({ action: "startValuableSearch", onlyServers: sonHesap.izinli });
       if (!r1.ok) throw new Error("arama başlatılamadı: " + (r1.hata || ""));
-      if (await bekleMesaj("COR3_VALUABLE_DONE", 30 * 60000) === null) throw new Error("arama 30 dk'da bitmedi");
+      if (await bekleMesaj("COR3_VALUABLE_DONE", 120 * 60000) === null) throw new Error("arama 120 dk'da bitmedi");
       await uyu(2000);
       haritaIste();
       await bekleMesaj("COR3_WS_MAP_DATA", 15000);
@@ -366,7 +366,7 @@
       await chrome.storage.local.set({ valuableSellerRunning: true, valuableSearchRunning: false });
       const r2 = await aktar({ action: "startValuableSeller", selectedServers: secilen, selectedDownloads: indir, excludeMarkets: sonHesap.haricMagaza });
       if (!r2.ok) throw new Error("satış başlatılamadı: " + (r2.hata || ""));
-      if (await bekleMesaj("COR3_VALUABLE_DONE", 60 * 60000) === null) throw new Error("satış 60 dk'da bitmedi");
+      if (await bekleMesaj("COR3_VALUABLE_DONE", 150 * 60000) === null) throw new Error("satış 150 dk'da bitmedi");
       await uyu(3000);
       if (!ayar.force) { yaz("force kapalı, bitti"); return; }
       haritaIste();
@@ -380,10 +380,12 @@
       yaz(`force: ${zorla.map((s) => s.ad).join(", ")}`);
       const r3 = await aktar({ action: "forceMaintenanceBatch", servers: zorla.map((s) => ({ id: s.id, name: s.ad })) });
       if (!r3.ok) throw new Error("force başlatılamadı: " + (r3.hata || ""));
-      if (await bekleMesaj("COR3_VALUABLE_FORCE_MAINT_DONE", 90 * 60000) === null) throw new Error("force 90 dk'da bitmedi");
+      if (await bekleMesaj("COR3_VALUABLE_FORCE_MAINT_DONE", 180 * 60000) === null) throw new Error("force 180 dk'da bitmedi");
       yaz("force bitti");
     } catch (e) {
       yaz("durdu: " + e.message);
+      const q = (await chrome.storage.local.get("automationQueueStatus")).automationQueueStatus || {};
+      if (q.active !== "auto-valuable" && !(q.queued || []).includes("auto-valuable")) await chrome.storage.local.set({ valuableSearchRunning: false, valuableSellerRunning: false });
     } finally {
       calisma.adim = "bos";
       calisma.sonDongu = simdi();
