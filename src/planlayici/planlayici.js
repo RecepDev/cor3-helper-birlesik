@@ -343,7 +343,7 @@
       haritaIste();
       await bekleMesaj("COR3_WS_MAP_DATA", 15000);
       durumYaz();
-      if (!sonHesap.hazir || !sonHesap.izinli.length) throw new Error("izinli sunucu yok");
+      if (!sonHesap.hazir || (!sonHesap.izinli.length && !sonHesap.forceOner.length)) throw new Error("izinli sunucu yok");
       calisma.adim = "arama";
       kaydetCalisma();
       yaz(`arama: ${sonHesap.izinli.length} izinli sunucu`);
@@ -361,21 +361,23 @@
       const indir = ((st.valuableDownloadsData && st.valuableDownloadsData.files) || []).map((f) => f.id);
       calisma.secilen = secilen;
       calisma.haricMagaza = sonHesap.haricMagaza;
-      if (!secilen.length && !indir.length) { yaz("satılacak bir şey yok"); calisma.adim = "bos"; return; }
-      calisma.adim = "satis";
-      kaydetCalisma();
-      yaz(`satış: ${secilen.length} sunucu, ${indir.length} indirilen; satılmayacak market: ${sonHesap.haricMagaza.join(", ") || "yok"}`);
-      await chrome.storage.local.set({ valuableSellerRunning: true, valuableSearchRunning: false });
-      const r2 = await aktar({ action: "startValuableSeller", selectedServers: secilen, selectedDownloads: indir, excludeMarkets: sonHesap.haricMagaza });
-      if (!r2.ok) throw new Error("satış başlatılamadı: " + (r2.hata || ""));
-      if (await bekleMesaj("COR3_VALUABLE_DONE", 150 * 60000) === null) throw new Error("satış 150 dk'da bitmedi");
-      await uyu(3000);
+      if (!secilen.length && !indir.length) yaz("satılacak bir şey yok");
+      else {
+        calisma.adim = "satis";
+        kaydetCalisma();
+        yaz(`satış: ${secilen.length} sunucu, ${indir.length} indirilen; satılmayacak market: ${sonHesap.haricMagaza.join(", ") || "yok"}`);
+        await chrome.storage.local.set({ valuableSellerRunning: true, valuableSearchRunning: false });
+        const r2 = await aktar({ action: "startValuableSeller", selectedServers: secilen, selectedDownloads: indir, excludeMarkets: sonHesap.haricMagaza });
+        if (!r2.ok) throw new Error("satış başlatılamadı: " + (r2.hata || ""));
+        if (await bekleMesaj("COR3_VALUABLE_DONE", 150 * 60000) === null) throw new Error("satış 150 dk'da bitmedi");
+        await uyu(3000);
+      }
       if (!ayar.force) { yaz("force kapalı, bitti"); return; }
       haritaIste();
       await bekleMesaj("COR3_WS_MAP_DATA", 15000);
       durumYaz();
       const kullanilan = new Set(secilen);
-      const zorla = sonHesap.sunucular.filter((s) => kullanilan.has(s.id) && s.durum === "izinli" && s.uyari && !s.bakimBitis);
+      const zorla = sonHesap.sunucular.filter((s) => s.durum === "izinli" && s.uyari && !s.bakimBitis && (kullanilan.has(s.id) || (s.cakisma && s.cakisma.length)));
       if (!zorla.length) { yaz("uyarı alan sunucu yok, force gerekmedi"); return; }
       calisma.adim = "force";
       kaydetCalisma();
@@ -404,7 +406,7 @@
     durumYaz();
     if (!ayar.acik || ayar.oneri || dongude) return;
     if (simdi() - (calisma.sonDongu || 0) < ayar.aralikDk * 60000) return;
-    if (!sonHesap || !sonHesap.hazir || !sonHesap.izinli.length) return;
+    if (!sonHesap || !sonHesap.hazir || (!sonHesap.izinli.length && !sonHesap.forceOner.length)) return;
     if (!otomasyonBos()) return;
     dongu();
   };
