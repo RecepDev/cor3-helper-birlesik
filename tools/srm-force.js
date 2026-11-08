@@ -1,0 +1,1 @@
+chrome.storage.local.get('planDurum').then(r=>{const s=r.planDurum.sunucular.find(x=>x.ad==='SRM7-N3L1');return new Promise(res=>chrome.runtime.sendMessage({planRelay:{action:'forceMaintenanceBatch',servers:[{id:s.id,name:s.ad}]}},x=>res('SRM gonderildi '+JSON.stringify(x))))})

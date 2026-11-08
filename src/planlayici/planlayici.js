@@ -14,7 +14,7 @@
     "019da731-2db5-7d76-9447-1ea3b9b78001": "soyuz",
     "019e4065-6ae8-760d-8724-58ab4f2cf7d7": "usol",
   };
-  const VARSAYILAN = { acik: false, oneri: true, payDk: 30, bilinmeyenDk: 0, jobPencereDk: 120, force: true, aralikDk: 30, haric: "" };
+  const VARSAYILAN = { acik: false, oneri: true, payDk: 30, bilinmeyenDk: 0, jobPencereDk: 120, force: true, kismiForce: true, aralikDk: 30, haric: "" };
   const ANAHTAR = ["marketData", "darkMarketData", "soyuzMarketData", "usolMarketData", "autoJobsTracker", "autoJobsQueue", "autoJobsRunning", "autoJobsDebugLogs", "autoJobsCompletedResults", "automationQueueStatus", "valuableSearchRunning", "valuableSellerRunning", "durum", "planAyar", "planOgrenme", "planCalisma"];
 
   let ayar = { ...VARSAYILAN };
@@ -87,12 +87,16 @@
         const u = ogr.uyari[s.id];
         if (!u || u.bas !== s.timeUntilMaintenance) { ogr.uyari[s.id] = { bas: s.timeUntilMaintenance, gorulme: new Date(t).toISOString() }; degisti = true; }
       }
+      ogr.gorulme = ogr.gorulme || {};
+      const once = ogr.gorulme[s.id];
       if (s.maintenanceEndsAt) {
         const u = ogr.uyari[s.id];
-        let bas = ogr.basla[s.id] && Date.parse(ogr.basla[s.id]) <= Date.parse(s.maintenanceEndsAt) ? ogr.basla[s.id] : null;
+        let bas = ogr.basla[s.id] && Date.parse(ogr.basla[s.id]) <= Date.parse(s.maintenanceEndsAt) && Date.parse(s.maintenanceEndsAt) - Date.parse(ogr.basla[s.id]) < 2 * 86400000 ? ogr.basla[s.id] : null;
+        if (!bas && once && !once.b && t - once.t < 20 * 60000 && t >= once.t) bas = new Date(once.t + (t - once.t) / 2).toISOString();
         if (!bas && u && Date.parse(u.bas) <= t + 60000 && Date.parse(u.bas) < Date.parse(s.maintenanceEndsAt)) bas = u.bas;
         if (bakimKaydet(s.id, s.serverName, s.serverTypeName, bas, s.maintenanceEndsAt)) degisti = true;
       }
+      ogr.gorulme[s.id] = { t, b: !!s.maintenanceEndsAt };
     }
     if (degisti) kaydetOgr();
   };
@@ -288,16 +292,22 @@
       }
       if (kayit.uyari && kayit.durum !== "bakımda") {
         const bas = Date.parse(kayit.uyari);
-        const cakisan = [];
-        for (const m of magazalar) {
-          if (!m.K.has(s.id) || !m.reset) continue;
-          const pB = m.reset, pS = m.reset + ayar.jobPencereDk * 60000;
-          if (bas < pS && bas + D.ms > pB) cakisan.push(m.ad);
-        }
+        const cakis = (a, b) => Math.max(0, Math.min(a[1], b[1]) - Math.max(a[0], b[0]));
+        const pencere = magazalar.filter((m) => m.K.has(s.id) && (m.bekleyen.length || m.reset)).map((m) => {
+          const b = m.bekleyen.length ? t : m.reset;
+          return { ad: m.ad, w: [b, b + ayar.jobPencereDk * 60000] };
+        });
+        const dogal = [bas, bas + D.ms], zorla = [t, t + D.ms + pay];
+        const oD = pencere.reduce((a, p) => a + cakis(dogal, p.w), 0);
+        const oZ = pencere.reduce((a, p) => a + cakis(zorla, p.w), 0);
+        const cakisan = pencere.filter((p) => cakis(dogal, p.w) > 0).map((p) => p.ad);
         if (cakisan.length) {
           kayit.cakisma = cakisan;
-          if (kayit.durum === "izinli") sonuc.forceOner.push(kayit.ad);
-          else sonuc.uyarilar.push(`${kayit.ad}: bakımı ${cakisan.join(", ")} job saatine denk geliyor, force da yetişmiyor`);
+          if (kayit.durum === "izinli") { sonuc.forceOner.push(kayit.ad); kayit.forceNeden = "yetişiyor"; }
+          else if (ayar.kismiForce !== false && kayit.neden !== "elle hariç" && oZ < oD) {
+            sonuc.forceOner.push(kayit.ad);
+            kayit.forceNeden = `kısmi: job saatine çakışma ${dk(oD)} dk -> ${dk(oZ)} dk`;
+          } else sonuc.uyarilar.push(`${kayit.ad}: bakımı ${cakisan.join(", ")} job saatine denk geliyor, force çakışmayı azaltmıyor`);
         }
       }
       sonuc.sunucular.push(kayit);
@@ -377,7 +387,8 @@
       await bekleMesaj("COR3_WS_MAP_DATA", 15000);
       durumYaz();
       const kullanilan = new Set(secilen);
-      const zorla = sonHesap.sunucular.filter((s) => s.durum === "izinli" && s.uyari && !s.bakimBitis && (kullanilan.has(s.id) || (s.cakisma && s.cakisma.length)));
+      const oneri = new Set(sonHesap.forceOner);
+      const zorla = sonHesap.sunucular.filter((s) => s.uyari && !s.bakimBitis && ((s.durum === "izinli" && kullanilan.has(s.id)) || oneri.has(s.ad)));
       if (!zorla.length) { yaz("uyarı alan sunucu yok, force gerekmedi"); return; }
       calisma.adim = "force";
       kaydetCalisma();
