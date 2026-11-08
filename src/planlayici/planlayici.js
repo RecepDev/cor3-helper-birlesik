@@ -237,12 +237,14 @@
       const sunucu = (v.market && v.market.marketServer) || m.sunucu || home.id;
       const repSeviye = (v.reputation && v.reputation.level) || 0;
       const jobs = Array.isArray(v.jobs) ? v.jobs : [];
-      const takip = (depo.autoJobsTracker || []).filter((j) => j.marketKey === m.k && (j.status === "pending" || j.status === "running" || j.status === "in-progress") && (j.serverName && j.serverName !== "None" || m.k !== "home"));
+      const secili = depo.seciliTurler && depo.seciliTurler[m.k];
+      const yapilacak = (ad) => !secili || secili.includes(ad);
+      const takip = (depo.autoJobsTracker || []).filter((j) => j.marketKey === m.k && (j.status === "pending" || j.status === "running" || j.status === "in-progress") && yapilacak(j.type || j.name) && (j.serverName && j.serverName !== "None" || m.k !== "home"));
       const bekleyen = [];
       for (const j of jobs) {
         const srv = (j.relatedServers || []).map((s) => s.serverName);
         const yapilamaz = (j.requiredReputationLevel || 0) > repSeviye || srv.some((n) => engelli.has(n));
-        if (!yapilamaz && (srv.length || m.k !== "home")) bekleyen.push({ ad: j.name, srv });
+        if (!yapilamaz && yapilacak(j.name) && (srv.length || m.k !== "home")) bekleyen.push({ ad: j.name, srv });
       }
       for (const j of takip) if (!engelli.has(j.serverName)) bekleyen.push({ ad: j.name, srv: [j.serverName] });
       const hedef = new Set();
@@ -422,6 +424,7 @@
   });
 
   chrome.storage.onChanged.addListener((d, alan) => {
+    if (alan === "sync" && d.autoJobsSelectedTypes) { depo.seciliTurler = d.autoJobsSelectedTypes.newValue || null; durumYaz(); }
     if (alan !== "local") return;
     for (const k of Object.keys(d)) if (ANAHTAR.includes(k)) depo[k] = d[k].newValue;
     if (d.planAyar) {
@@ -439,6 +442,7 @@
 
   chrome.storage.local.get(ANAHTAR, async (r) => {
     depo = r;
+    try { depo.seciliTurler = (await chrome.storage.sync.get("autoJobsSelectedTypes")).autoJobsSelectedTypes || null; } catch {}
     ayar = { ...VARSAYILAN, ...(r.planAyar || {}) };
     if (r.planOgrenme && r.planOgrenme.surum === 2) ogr = r.planOgrenme;
     if (r.planCalisma) calisma = { ...r.planCalisma, adim: "bos" };
