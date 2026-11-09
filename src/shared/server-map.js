@@ -531,9 +531,63 @@ export var FALLBACK_PATH_MAP = {
     ]
 };
 
-export function findMaintenanceBlocker(serverMaintenanceMap, marketKey) {
+var _baglanti = null;
+try {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get('serverBaglantilar', function (r) { _baglanti = (r && r.serverBaglantilar) || null; });
+        chrome.storage.onChanged.addListener(function (d, alan) { if (alan === 'local' && d.serverBaglantilar) _baglanti = d.serverBaglantilar.newValue || null; });
+    }
+} catch (e) { }
+
+export function yolEngeli(maint, baglanti, hedefAd) {
+    if (!maint || !Array.isArray(baglanti) || !baglanti.length) return undefined;
+    var ids = Object.keys(maint);
+    var ev = null, hedef = null;
+    for (var i = 0; i < ids.length; i++) {
+        var ad = maint[ids[i]].serverName;
+        if (ad === 'Home Server') ev = ids[i];
+        if (ad === hedefAd) hedef = ids[i];
+    }
+    if (!ev || !hedef) return undefined;
+    var now = Date.now();
+    var bakimda = function (id) { var x = maint[id]; return !!(x && x.isInMaintenance && x.maintenanceEndsAt && new Date(x.maintenanceEndsAt).getTime() > now); };
+    var kom = {};
+    for (var j = 0; j < baglanti.length; j++) {
+        var a = baglanti[j][0], b = baglanti[j][1];
+        (kom[a] = kom[a] || []).push(b);
+        (kom[b] = kom[b] || []).push(a);
+    }
+    var ara = function (atla) {
+        var ata = {}; ata[ev] = ev;
+        var q = [ev];
+        while (q.length) {
+            var c = q.shift();
+            if (c === hedef) break;
+            var n = kom[c] || [];
+            for (var k = 0; k < n.length; k++) {
+                if (ata[n[k]] !== undefined) continue;
+                if (atla && n[k] !== hedef && bakimda(n[k])) continue;
+                ata[n[k]] = c;
+                q.push(n[k]);
+            }
+        }
+        return ata[hedef] !== undefined ? ata : null;
+    };
+    if (bakimda(hedef)) return { blockerName: maint[hedef].serverName, blockerId: hedef, maintenanceEndsAt: maint[hedef].maintenanceEndsAt };
+    if (ara(true)) return null;
+    var ata = ara(false);
+    if (!ata) return null;
+    for (var at = ata[hedef]; at && at !== ev; at = ata[at]) {
+        if (bakimda(at)) return { blockerName: maint[at].serverName, blockerId: at, maintenanceEndsAt: maint[at].maintenanceEndsAt };
+    }
+    return null;
+}
+
+export function findMaintenanceBlocker(serverMaintenanceMap, marketKey, baglanti) {
     var pathKey = marketKey === 'dark' ? 'D4RK RM7MI' : marketKey === 'soyuz' ? 'SRM7-M' : marketKey === 'usol' ? 'URM7-M' : null;
     if (!pathKey || !serverMaintenanceMap) return null;
+    var dinamik = yolEngeli(serverMaintenanceMap, baglanti || _baglanti, pathKey);
+    if (dinamik !== undefined) return dinamik;
     var path = FALLBACK_PATH_MAP[pathKey];
     if (!path) return null;
     var now = Date.now();

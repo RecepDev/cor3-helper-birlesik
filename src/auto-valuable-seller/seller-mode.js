@@ -237,78 +237,92 @@ export async function runSeller(selectedServers, selectedDownloads, excludeMarke
     if (running) {
         log('--- Selling valuables at markets ---');
 
+        function onSoldItem(soldItem) {
+            var sid = soldItem.itemId;
+            _sellerDownloadsData.files = _sellerDownloadsData.files.filter(function (f) { return f.id !== sid; });
+            updateDownloadsUI(_sellerDownloadsData);
+            if (_lastServersData) {
+                var mapping = _desktopToServerMap[sid];
+                if (mapping) {
+                    var targetSrv = _lastServersData.servers.find(function (s) { return s.id === mapping.serverId; });
+                    if (targetSrv) {
+                        if (mapping.type === 'file') {
+                            targetSrv.files = (targetSrv.files || []).filter(function (f) { return (f.fileId || f.id) !== mapping.originalId; });
+                        } else if (mapping.type === 'log') {
+                            targetSrv.logs = (targetSrv.logs || []).filter(function (l) { return l.seq !== mapping.originalId; });
+                        }
+                        var remaining = (targetSrv.files || []).length + (targetSrv.logs || []).length;
+                        if (remaining === 0 && targetSrv.status === 'DOWNLOADED') {
+                            targetSrv.status = 'DONE';
+                        }
+                    }
+                    delete _desktopToServerMap[sid];
+                }
+                updateServersUI(_lastServersData);
+            }
+        }
+        function itemPrice(it) { return Number(it.price != null ? it.price : it.totalPrice != null ? it.totalPrice : it.sellPrice != null ? it.sellPrice : it.basePrice) || 0; }
+        function itemRep(it) { return Number(it.repGain != null ? it.repGain : it.totalRepGain != null ? it.totalRepGain : it.reputation) || 0; }
+
+        var offers = {};
+        var reachable = [];
         for (var mi = 0; mi < MARKET_SELL_ORDER.length; mi++) {
             if (!running) break;
-
             var market = MARKET_SELL_ORDER[mi];
             if (excludeMarkets.indexOf(market.name) !== -1) { log(market.name + ': skipped (protected by planner)'); continue; }
             log('Checking ' + market.name + ' market for sellable items...');
-
-            // Set endpoint to market server before requesting sellable items (HOME is default, skip)
             if (market.serverId) {
-                log(market.name + ': setting endpoint to market server...');
                 var epOk = await _sendSetEndpoint(market.serverId);
-                if (!epOk) {
-                    log(market.name + ': failed to set endpoint \u2014 skipping', 'warn');
-                    continue;
-                }
+                if (!epOk) { log(market.name + ': failed to set endpoint — skipping', 'warn'); continue; }
                 await delay(humanDelay());
             }
-
             var sellableResult = await getSellableItems(market.id);
             var sellableItems = sellableResult.items || [];
-            if (sellableItems.length === 0) {
-                log(market.name + ': no sellable items');
-                await delay(humanDelay());
-                continue;
+            reachable.push(market);
+            log(market.name + ': ' + sellableItems.length + ' sellable item(s) (💰' + sellableResult.totalPrice + ' ⭐' + sellableResult.totalRepGain + ')');
+            if (sellableItems.length) log(market.name + ' item sample: ' + JSON.stringify(sellableItems[0]).slice(0, 300));
+            for (var si = 0; si < sellableItems.length; si++) {
+                var it = sellableItems[si];
+                var id = it.itemId || it.id || it.fileId;
+                if (!id) continue;
+                (offers[id] = offers[id] || []).push({ market: market, itemType: it.itemType || 'file', price: itemPrice(it), rep: itemRep(it) });
             }
+            await delay(humanDelay());
+        }
 
-            var items = sellableItems.map(function (item) {
-                var id = item.itemId || item.id || item.fileId;
-                var type = item.itemType || 'file';
-                return id ? { itemType: type, itemId: id } : null;
-            }).filter(Boolean);
-            var marketCredits = sellableResult.totalPrice;
-            var marketRep = sellableResult.totalRepGain;
-            log(market.name + ': found ' + items.length + ' sellable item(s) (\ud83d\udcb0' + marketCredits + ' \u2b50' + marketRep + ')');
+        var plan = {};
+        for (var oid in offers) {
+            var list = offers[oid];
+            var best = list.reduce(function (a, b) { return b.price > a.price ? b : a; }, list[0]);
+            var dark = list.find(function (o) { return o.market.name === 'D4RK'; });
+            if (dark && dark.price >= best.price * 0.9) best = dark;
+            var key = best.market.name;
+            (plan[key] = plan[key] || { market: best.market, items: [], price: 0, rep: 0 }).items.push({ itemType: best.itemType, itemId: oid });
+            plan[key].price += best.price;
+            plan[key].rep += best.rep;
+        }
 
-            if (items.length > 0) {
-                await delay(humanDelay());
-                log(market.name + ': selling ' + items.length + ' item(s)...');
-                var sold = await sellItems(market.id, items, function (soldItem) {
-                    var sid = soldItem.itemId;
-                    _sellerDownloadsData.files = _sellerDownloadsData.files.filter(function (f) { return f.id !== sid; });
-                    updateDownloadsUI(_sellerDownloadsData);
-                    if (_lastServersData) {
-                        var mapping = _desktopToServerMap[sid];
-                        if (mapping) {
-                            var targetSrv = _lastServersData.servers.find(function (s) { return s.id === mapping.serverId; });
-                            if (targetSrv) {
-                                if (mapping.type === 'file') {
-                                    targetSrv.files = (targetSrv.files || []).filter(function (f) { return (f.fileId || f.id) !== mapping.originalId; });
-                                } else if (mapping.type === 'log') {
-                                    targetSrv.logs = (targetSrv.logs || []).filter(function (l) { return l.seq !== mapping.originalId; });
-                                }
-                                var remaining = (targetSrv.files || []).length + (targetSrv.logs || []).length;
-                                if (remaining === 0 && targetSrv.status === 'DOWNLOADED') {
-                                    targetSrv.status = 'DONE';
-                                }
-                            }
-                            delete _desktopToServerMap[sid];
-                        }
-                        updateServersUI(_lastServersData);
-                    }
-                });
-                if (sold > 0) {
-                    log(market.name + ': sold ' + sold + '/' + items.length + ' item(s) \u2713', 'success');
-                    grandTotalCredits += marketCredits;
-                    grandTotalRep += marketRep;
-                    grandTotalSold += sold;
-                } else {
-                    log(market.name + ': sell failed', 'error');
-                }
+        for (var ri = 0; ri < reachable.length; ri++) {
+            if (!running) break;
+            var pm = plan[reachable[ri].name];
+            if (!pm || !pm.items.length) continue;
+            var mk = pm.market;
+            if (mk.serverId) {
+                var epOk2 = await _sendSetEndpoint(mk.serverId);
+                if (!epOk2) { log(mk.name + ': failed to set endpoint — skipping sale', 'warn'); continue; }
                 await delay(humanDelay());
             }
+            log(mk.name + ': selling ' + pm.items.length + ' item(s) at best price (💰' + pm.price + ' ⭐' + pm.rep + ')...');
+            var sold = await sellItems(mk.id, pm.items, onSoldItem);
+            if (sold > 0) {
+                log(mk.name + ': sold ' + sold + '/' + pm.items.length + ' item(s) ✓', 'success');
+                grandTotalCredits += Math.round(pm.price * sold / pm.items.length);
+                grandTotalRep += Math.round(pm.rep * sold / pm.items.length);
+                grandTotalSold += sold;
+            } else {
+                log(mk.name + ': sell failed', 'error');
+            }
+            await delay(humanDelay());
         }
     }
 

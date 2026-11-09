@@ -86,6 +86,12 @@ function isJobBugged(job) {
 let autoJobsRunning = false;
 let autoFinishAllActive = false;
 let autoJobsSelectedTypes = { home: [], dark: [], soyuz: [], usol: [] };
+const selectedTypesReady = new Promise(res => chrome.storage.sync.get('autoJobsSelectedTypes', (data) => {
+    if (data.autoJobsSelectedTypes) {
+        autoJobsSelectedTypes = { home: [], dark: [], soyuz: [], usol: [], ...data.autoJobsSelectedTypes };
+    }
+    res();
+}));
 let autoJobsDebugLogs = [];
 const AUTO_JOBS_MAX_LOGS = 200;
 let autoJobsTracker = [];
@@ -130,6 +136,7 @@ function switchAutoJobsTab(market) {
 }
 
 async function renderAutoJobsTabs() {
+    await selectedTypesReady;
     const { marketData, darkMarketData, darkMarketAvailable, darkMarketMaintenanceEndsAt, darkMarketBlockerServer, soyuzMarketData, soyuzMarketAvailable, soyuzMarketMaintenanceEndsAt, soyuzMarketBlockerServer, usolMarketData, usolMarketAvailable, usolMarketMaintenanceEndsAt, usolMarketBlockerServer, serverMaintenanceMap } = await chrome.storage.local.get(['marketData', 'darkMarketData', 'darkMarketAvailable', 'darkMarketMaintenanceEndsAt', 'darkMarketBlockerServer', 'soyuzMarketData', 'soyuzMarketAvailable', 'soyuzMarketMaintenanceEndsAt', 'soyuzMarketBlockerServer', 'usolMarketData', 'usolMarketAvailable', 'usolMarketMaintenanceEndsAt', 'usolMarketBlockerServer', 'serverMaintenanceMap']);
     renderAutoJobsMarket(autoJobsContentHome, marketData, 'home');
     const darkB = darkMarketAvailable === false ? null : findMaintenanceBlocker(serverMaintenanceMap, 'dark');
@@ -289,18 +296,25 @@ function renderAutoJobsMarket(container, data, marketKey, marketAvailable, maint
     updateSelectAllState(selectAllCb, checkboxes);
 }
 
-function updateAutoJobsSelectedTypes(marketKey, container) {
+async function updateAutoJobsSelectedTypes(marketKey, container) {
+    await selectedTypesReady;
     const cbs = container.querySelectorAll('input[type="checkbox"][data-job-type]');
-    autoJobsSelectedTypes[marketKey] = [];
+    const shown = new Set();
+    const checked = [];
     cbs.forEach(cb => {
-        if (cb.checked) autoJobsSelectedTypes[marketKey].push(cb.dataset.jobType);
+        shown.add(cb.dataset.jobType);
+        if (cb.checked) checked.push(cb.dataset.jobType);
     });
+    const kept = (autoJobsSelectedTypes[marketKey] || []).filter(t => !shown.has(t));
+    autoJobsSelectedTypes[marketKey] = [...kept, ...checked];
     chrome.storage.sync.set({ autoJobsSelectedTypes });
 }
 
-chrome.storage.sync.get('autoJobsSelectedTypes', (data) => {
-    if (data.autoJobsSelectedTypes) {
-        autoJobsSelectedTypes = data.autoJobsSelectedTypes;
+
+
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.autoJobsSelectedTypes && changes.autoJobsSelectedTypes.newValue) {
+        autoJobsSelectedTypes = { home: [], dark: [], soyuz: [], usol: [], ...changes.autoJobsSelectedTypes.newValue };
     }
 });
 

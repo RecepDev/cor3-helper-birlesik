@@ -54,6 +54,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
             })();
         }
     }
+    if (area === 'local' && (changes.serverBaglantilar && !changes.serverBaglantilar.oldValue || changes.serverMaintenanceMap)) {
+        const say = (m) => Object.values(m || {}).filter((x) => x && x.isInMaintenance && x.maintenanceEndsAt && new Date(x.maintenanceEndsAt).getTime() > Date.now()).length;
+        if (changes.serverBaglantilar || say(changes.serverMaintenanceMap.newValue) < say(changes.serverMaintenanceMap.oldValue)) {
+            chrome.storage.sync.get('autoFinishAllJobsEnabled').then((s) => { if (s.autoFinishAllJobsEnabled) scheduleAutoFinishAllBgDebounced(); }).catch(() => {});
+        }
+    }
     if (area === 'local' && (changes.marketData || changes.darkMarketData || changes.soyuzMarketData || changes.usolMarketData)) {
         const now = Date.now();
         const resetChanged = (change, marketKey) => {

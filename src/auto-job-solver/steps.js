@@ -75,10 +75,14 @@ export async function stepSetEndpoint(serverId) {
         var pathThroughSuccess = false;
         var triedPathCount = 0;
         var pathsToTry = allPaths.length > 0 ? allPaths : [path];
+        var failedNodes = {};
+        var pathStart = Date.now();
 
         for (var pathIdx = 0; pathIdx < pathsToTry.length; pathIdx++) {
             var currentPath = pathsToTry[pathIdx];
             if (currentPath.length <= 1) continue;
+            if (currentPath.slice(0, -1).some(function (s) { return failedNodes[s.id]; })) continue;
+            if (triedPathCount >= 5 || Date.now() - pathStart > 20 * 60000) break;
             if (triedPathCount > 0) await fetchMapData(true);
             if (serverMap.isReady()) {
                 var targetSrv = serverMap.getServer(serverId);
@@ -101,6 +105,7 @@ export async function stepSetEndpoint(serverId) {
                 if (intResult.unreachable) {
                     var intMsg = intermediate.name + ' unreachable on this path';
                     log('⚡ Path-through: ' + intMsg + ' — will try next path', 'warn');
+                    failedNodes[intermediate.id] = true;
                     pathFailed = true;
                     break;
                 }
@@ -109,6 +114,7 @@ export async function stepSetEndpoint(serverId) {
                     await stepLogin(intermediate.id);
                 } catch (e) {
                     log('⚡ Path-through: login/hack failed on ' + intermediate.name + ': ' + e.message + ' — will try next path', 'warn');
+                    failedNodes[intermediate.id] = true;
                     pathFailed = true;
                     break;
                 }

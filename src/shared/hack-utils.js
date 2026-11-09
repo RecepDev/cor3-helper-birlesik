@@ -20,6 +20,28 @@ export function detectHackType(pollMs) {
     });
 }
 
+export function hackTeshis() {
+    var adlar = {};
+    document.querySelectorAll('[data-sentry-component],[data-component-name]').forEach(function (el) {
+        var a = el.getAttribute('data-sentry-component') || el.getAttribute('data-component-name');
+        if (a) adlar[a] = (adlar[a] || 0) + 1;
+    });
+    var basliklar = [];
+    document.querySelectorAll('[data-sentry-component*="Window"] [data-sentry-component*="Title"],[data-sentry-component*="Header"],[class*="title"],[class*="Title"]').forEach(function (el) {
+        if (el.offsetParent === null) return;
+        var t = (el.textContent || '').trim().slice(0, 40);
+        if (t && basliklar.indexOf(t) < 0 && basliklar.length < 15) basliklar.push(t);
+    });
+    var metin = 'components: ' + Object.keys(adlar).map(function (k) { return k + (adlar[k] > 1 ? 'x' + adlar[k] : ''); }).join(',') + ' | titles: ' + basliklar.join(' / ');
+    try {
+        var l = JSON.parse(localStorage.getItem('cor3HackTeshis') || '[]');
+        l.push({ t: new Date().toISOString(), m: metin, html: (document.querySelector('[data-sentry-component*="Application"]:not([data-sentry-component="App"])') || {}).outerHTML ? document.querySelector('[data-sentry-component*="Application"]:not([data-sentry-component="App"])').outerHTML.slice(0, 4000) : '' });
+        while (l.length > 10) l.shift();
+        localStorage.setItem('cor3HackTeshis', JSON.stringify(l));
+    } catch (e) {}
+    return metin;
+}
+
 export function isHackMinigameOpen() {
     return !!(document.querySelector('[data-component-name="IceWallBreakApplication"]') ||
         document.querySelector('[data-sentry-component="IceWallBreakApplication"]') ||
@@ -65,6 +87,7 @@ export function createWaitForHackToBeDone(logFn, abortFlagFn) {
             logFn(hackType + ' hack detected — waiting up to 60s');
         } else {
             logFn('Could not detect hack type — using default 60s timeout', 'warn');
+            try { logFn('Hack type diagnosis: ' + hackTeshis().slice(0, 500), 'warn'); } catch (e) {}
         }
 
         var saiUpdateReceived = false;

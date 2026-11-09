@@ -266,7 +266,7 @@ export async function ensureLoadoutForJob(job) {
 
     if (hackCandidates.length === 0) {
         log('Loadout: no hack software available for ' + serverTypeName + ' — proceeding (may use existing access)', 'warn');
-        return true;
+        return { yetmez: true, neden: 'no hack software for ' + serverTypeName };
     }
 
     var bestHack = hackCandidates[0];
@@ -342,6 +342,9 @@ export async function ensureLoadoutForJob(job) {
         }
     }
 
+    if (serverDefenceRate > 0 && computedHackPower < serverDefenceRate) {
+        return { yetmez: true, neden: 'hack power ' + computedHackPower + ' < serverDefenceRate ' + serverDefenceRate };
+    }
     if (!alreadyBest || targetHw !== currentHw) {
         log('Loadout: equipping HACK-only software "' + bestHack.sw.name + '" (power ' + (bestHack.spec.power || []).join('-') + ') for ' + serverTypeName);
         await applyLoadoutChange(loadout, targetHw, targetSwIds);
@@ -767,4 +770,42 @@ export function throwMinigameLockError(lockData) {
         lockErr.remainingMs = lockInfo.remainingMs;
         throw lockErr;
     }
+}
+
+export async function decryptOnKontrol(job) {
+    if (!jobConditionsRequireDecrypt(job)) return null;
+    var ext = null, seviye = null;
+    for (var i = 0; i < (job.conditions || []).length; i++) {
+        var c = job.conditions[i];
+        if ((c.type !== 'DecryptFile' && c.type !== 'DecryptDownloadedFile') || !c.details) continue;
+        var e0 = (c.details.extensions || [])[0];
+        if (e0 && e0.ext) ext = e0.ext;
+        seviye = (e0 && e0.encryptionLevel) || c.details.encryptionLevel || null;
+        var f = c.details.files && c.details.files[0];
+        var m = f && /(\.[a-z0-9]+)$/i.exec(f.name || f.fileName || '');
+        if (!ext && m) ext = m[1];
+        if (ext) break;
+    }
+    if (!ext) return null;
+    ext = ext.toLowerCase();
+    var loadout = await getLoadoutData(false);
+    if (!loadout) return null;
+    var adaylar = findDecryptSoftwareForFileType(loadout.ownedSoftware || [], ext);
+    if (!adaylar.length) return { yetmez: true, neden: 'no decrypt software for ' + ext };
+    if (!Array.isArray(seviye) || !seviye.length) return null;
+    var gerek = Math.max.apply(null, seviye);
+    var enIyi = 0;
+    for (var k = 0; k < adaylar.length; k++) {
+        var id = adaylar[k].sw.id;
+        var dene = JSON.parse(JSON.stringify(loadout));
+        var hw = findBestHardware(loadout, [id]);
+        if (hw) dene.equippedHardware = hw;
+        var an = calculateAnalysis(dene, [id]);
+        if (!an.canBoot || !an.swAnalysis[id]) continue;
+        var ab = an.swAnalysis[id].abilities;
+        for (var a = 0; a < ab.length; a++) if (ab[a].type === 'DECRYPT' && ab[a].computedPower > enIyi) enIyi = ab[a].computedPower;
+    }
+    log('Pre-check decrypt ' + ext + ': best power ' + enIyi + ', encryption level ' + seviye.join('-'));
+    if (enIyi < gerek) return { yetmez: true, neden: 'decrypt power ' + enIyi + ' < encryption level ' + gerek + ' (' + ext + ')' };
+    return null;
 }

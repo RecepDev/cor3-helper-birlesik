@@ -311,6 +311,12 @@ export async function loginOrHack(serverId) {
         log('Hack info \u2014 serverDefenceRate: ' + loginDefenceRate + ', no hack tools equipped', 'warn');
     }
 
+    var hackHata = {};
+    try { hackHata = JSON.parse(localStorage.getItem('cor3AramaHackHata') || '{}'); } catch (e) { }
+    if (hackHata[serverId] && Date.now() - hackHata[serverId] < 6 * 3600000) {
+        log(name + ': skipping hack (failed ' + Math.round((Date.now() - hackHata[serverId]) / 60000) + 'm ago, retry after 6h)', 'warn');
+        return false;
+    }
     log('No active access to ' + name + ' \u2014 equipping hack loadout');
     var loadoutResult = await ensureHackOnlyLoadout(serverId, getLoginStatus);
     if (loadoutResult && !loadoutResult.ok && loadoutResult.reason === 'insufficient-power') {
@@ -319,7 +325,7 @@ export async function loginOrHack(serverId) {
     }
     await delay(humanDelay());
 
-    var MAX_HACK_ATTEMPTS = 6;
+    var MAX_HACK_ATTEMPTS = 2;
     for (var hackAttempt = 1; hackAttempt <= MAX_HACK_ATTEMPTS; hackAttempt++) {
         if (!running) { return false; }
         if (hackAttempt > 1) {
@@ -347,7 +353,9 @@ export async function loginOrHack(serverId) {
         }
     }
 
-    log(name + ': hack failed after ' + MAX_HACK_ATTEMPTS + ' attempts \u2014 no access granted', 'error');
+    log(name + ': hack failed after ' + MAX_HACK_ATTEMPTS + ' attempts \u2014 no access granted, skipping for 6h', 'error');
+    hackHata[serverId] = Date.now();
+    try { localStorage.setItem('cor3AramaHackHata', JSON.stringify(hackHata)); } catch (e) { }
     return false;
 }
 

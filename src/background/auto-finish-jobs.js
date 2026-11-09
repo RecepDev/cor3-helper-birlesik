@@ -1,6 +1,6 @@
 import { getCor3Tab, bgAutoJobLog } from './helpers.js';
 import { MARKET_IDS, LOG_JOB_TYPES } from '../shared/server-constants.js';
-import { FALLBACK_PATH_MAP, FALLBACK_SERVER_PRIORITY } from '../shared/server-map.js';
+import { FALLBACK_PATH_MAP, FALLBACK_SERVER_PRIORITY, yolEngeli } from '../shared/server-map.js';
 
 const SUPPORTED_JOB_TYPES_BG = [
     'File Decryption', 'IP Injection', 'Data Download', 'Log Deletion',
@@ -29,7 +29,7 @@ function resolveRecentJobMarketBg(recentJob, fallbackKey, marketData, darkMarket
     return fallbackKey;
 }
 
-export function collectJobsBg(marketData, darkMarketData, completedResults, serverMaintenanceMap, soyuzMarketData, usolMarketData) {
+export function collectJobsBg(marketData, darkMarketData, completedResults, serverMaintenanceMap, soyuzMarketData, usolMarketData, serverBaglantilar) {
     const SERVER_PRIORITY = FALLBACK_SERVER_PRIORITY;
     const JOB_TYPE_PRIORITY = ['IP Injection', 'IP Cleanup', 'Data Upload', 'Data Download', 'Log Deletion', 'Log Download', 'File Elimination', 'File Decryption', 'Decrypt & Extract'];
     const maint = serverMaintenanceMap || {};
@@ -43,6 +43,8 @@ export function collectJobsBg(marketData, darkMarketData, completedResults, serv
         }
     }
     function getPathBlocker(serverName) {
+        const dinamik = yolEngeli(maint, serverBaglantilar, serverName);
+        if (dinamik !== undefined) return dinamik ? { blocked: true, blockerName: dinamik.blockerName, blockerId: dinamik.blockerId, maintenanceEndsAt: dinamik.maintenanceEndsAt || null } : { blocked: false };
         const path = SERVER_PATH_MAP[serverName];
         if (!path) return { blocked: false };
         for (const srv of path) {
@@ -136,14 +138,14 @@ export async function scheduleAutoFinishAllBg() {
         return;
     }
 
-    const { marketData, darkMarketData, soyuzMarketData, usolMarketData, autoJobsRunning, serverMaintenanceMap } = await chrome.storage.local.get(['marketData', 'darkMarketData', 'soyuzMarketData', 'usolMarketData', 'autoJobsRunning', 'serverMaintenanceMap']);
+    const { marketData, darkMarketData, soyuzMarketData, usolMarketData, autoJobsRunning, serverMaintenanceMap, serverBaglantilar } = await chrome.storage.local.get(['marketData', 'darkMarketData', 'soyuzMarketData', 'usolMarketData', 'autoJobsRunning', 'serverMaintenanceMap', 'serverBaglantilar']);
 
     if (autoJobsRunning) {
         return;
     }
 
     const { autoJobsCompletedResults: crSched } = await chrome.storage.local.get('autoJobsCompletedResults');
-    const availableNow = collectJobsBg(marketData, darkMarketData, crSched || [], serverMaintenanceMap, soyuzMarketData, usolMarketData);
+    const availableNow = collectJobsBg(marketData, darkMarketData, crSched || [], serverMaintenanceMap, soyuzMarketData, usolMarketData, serverBaglantilar);
     if (availableNow.length > 0) {
         bgAutoJobLog('🔄 Auto Finish All: jobs available now — starting in 10s');
         await chrome.alarms.create('autoFinishAllJobs', { delayInMinutes: 10 / 60 });
@@ -160,6 +162,9 @@ export async function scheduleAutoFinishAllBg() {
             if (diff > 0 && diff < minWaitMs) {
                 minWaitMs = diff;
                 scheduledReason = 'job reset';
+            } else if (diff <= 0 && diff > -6 * 3600 * 1000 && 5 * 60 * 1000 < minWaitMs) {
+                minWaitMs = 5 * 60 * 1000;
+                scheduledReason = 'market reset passed but not refreshed (unreachable?) — rechecking';
             }
         }
     }
@@ -311,8 +316,8 @@ export async function runAutoFinishAllBg() {
             }, 30000);
         });
 
-        const { marketData, darkMarketData, soyuzMarketData, usolMarketData, autoJobsCompletedResults: crRun, serverMaintenanceMap } = await chrome.storage.local.get(['marketData', 'darkMarketData', 'soyuzMarketData', 'usolMarketData', 'autoJobsCompletedResults', 'serverMaintenanceMap']);
-        const jobsToRun = collectJobsBg(marketData, darkMarketData, crRun || [], serverMaintenanceMap, soyuzMarketData, usolMarketData);
+        const { marketData, darkMarketData, soyuzMarketData, usolMarketData, autoJobsCompletedResults: crRun, serverMaintenanceMap, serverBaglantilar } = await chrome.storage.local.get(['marketData', 'darkMarketData', 'soyuzMarketData', 'usolMarketData', 'autoJobsCompletedResults', 'serverMaintenanceMap', 'serverBaglantilar']);
+        const jobsToRun = collectJobsBg(marketData, darkMarketData, crRun || [], serverMaintenanceMap, soyuzMarketData, usolMarketData, serverBaglantilar);
 
         if (jobsToRun.length > 0) {
             const skippedList = jobsToRun._skippedMaintenance || [];

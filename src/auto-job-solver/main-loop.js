@@ -5,7 +5,7 @@ import { humanDelay } from '../shared/ws-utils.js';
 import { friendlyError } from '../shared/error-map.js';
 import { getServerTypeName } from '../shared/loadout-resolver.js';
 import { state, serverMap, sendCmd, delay, log, DARK_MARKET_SERVER_ID, SOYUZ_MARKET_SERVER_ID, USOL_MARKET_SERVER_ID, SERVER_PATH_MAP } from './state.js';
-import { getServerPriority, getJobTypePriority, isJobBugged, updateTracker, saveCompletedResultsIncremental, signalDone, fetchMapData, checkPathMaintenance, invalidateLoadoutCache, ensureLoadoutForJob } from './helpers.js';
+import { getServerPriority, getJobTypePriority, isJobBugged, updateTracker, saveCompletedResultsIncremental, signalDone, fetchMapData, checkPathMaintenance, invalidateLoadoutCache, ensureLoadoutForJob, decryptOnKontrol } from './helpers.js';
 import { stepSetEndpoint, stepCompleteJob } from './steps.js';
 import { solveJob } from './solvers.js';
 import { waitForIceWallStuckClear, waitForMinigameWindow } from '../shared/hack-utils.js';
@@ -203,10 +203,21 @@ export async function processQueue() {
         state._currentJobRef = job;
         updateTracker();
 
+        var onKontrol = null;
         try {
-            await ensureLoadoutForJob(job);
+            onKontrol = await ensureLoadoutForJob(job);
+            if (!(onKontrol && onKontrol.yetmez) && !job.alreadyTaken) onKontrol = await decryptOnKontrol(job);
         } catch (loadoutErr) {
             log('Loadout pre-check warning: ' + loadoutErr.message + ' — proceeding anyway', 'warn');
+        }
+        if (onKontrol && onKontrol.yetmez && !job.alreadyTaken) {
+            job.status = 'skipped';
+            job.error = 'Pre-check: ' + onKontrol.neden + ' — not taken, no deposit';
+            log('⚠️ Job skipped (pre-check): ' + job.name + ' — ' + onKontrol.neden, 'warn');
+            state._currentJobRef = null;
+            updateTracker();
+            saveCompletedResultsIncremental();
+            continue;
         }
 
         try {

@@ -10,7 +10,8 @@
     "activeTab",
     "tabs",
     "sidePanel",
-    "alarms"
+    "alarms",
+    "notifications"
   ],
   "side_panel": {
     "default_path": "popup.html"
