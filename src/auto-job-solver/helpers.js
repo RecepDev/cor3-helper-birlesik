@@ -793,7 +793,7 @@ export async function decryptOnKontrol(job) {
     var adaylar = findDecryptSoftwareForFileType(loadout.ownedSoftware || [], ext);
     if (!adaylar.length) return { yetmez: true, neden: 'no decrypt software for ' + ext };
     if (!Array.isArray(seviye) || !seviye.length) return null;
-    var gerek = Math.max.apply(null, seviye);
+    var enAz = Math.min.apply(null, seviye), gerek = Math.max.apply(null, seviye);
     var enIyi = 0;
     for (var k = 0; k < adaylar.length; k++) {
         var id = adaylar[k].sw.id;
@@ -806,6 +806,10 @@ export async function decryptOnKontrol(job) {
         for (var a = 0; a < ab.length; a++) if (ab[a].type === 'DECRYPT' && ab[a].computedPower > enIyi) enIyi = ab[a].computedPower;
     }
     log('Pre-check decrypt ' + ext + ': best power ' + enIyi + ', encryption level ' + seviye.join('-'));
-    if (enIyi < gerek) return { yetmez: true, neden: 'decrypt power ' + enIyi + ' < encryption level ' + gerek + ' (' + ext + ')' };
+    if (enIyi >= gerek) return null;
+    var olasilik = enIyi < enAz ? 0 : (enIyi - enAz + 1) / (gerek - enAz + 1);
+    var odul = job.rewardCredits || 0, depozito = job.deposit || 0;
+    log('Pre-check decrypt: success chance ' + Math.round(olasilik * 100) + '% (reward ' + odul + ', deposit ' + depozito + ')');
+    if (olasilik < 1) return { yetmez: true, neden: 'decrypt power ' + enIyi + ' < encryption level ' + enAz + '-' + gerek + ', chance ' + Math.round(olasilik * 100) + '% (' + ext + ')' };
     return null;
 }
