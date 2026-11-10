@@ -223,7 +223,7 @@ export function setupWsRelay() {
                     _automationFinish('auto-send');
                     return;
                 }
-                chrome.storage.local.get(['mercenariesData', 'usolMercenariesData', 'mercConfigData', 'expeditionConfigData', 'usolExpeditionConfigData'], (localData) => {
+                chrome.storage.local.get(['mercenariesData', 'usolMercenariesData', 'mercConfigData', 'expeditionConfigData', 'usolExpeditionConfigData', 'gorevEsya', 'kararGuvenli'], (localData) => {
                     let coreMercs = [];
                     const coreRaw = localData.mercenariesData;
                     if (coreRaw) {
@@ -257,6 +257,11 @@ export function setupWsRelay() {
                     }
 
                     const allMercs = [...coreMercs, ...usolMercs];
+                    const elitIds = new Set();
+                    coreElite.forEach(es => { if (es.mercenary) elitIds.add(es.mercenary.id); });
+                    ((usolData && usolData.eliteSlots) || []).forEach(es => { if (es.mercenary) elitIds.add(es.mercenary.id); });
+                    const dokunma = new Set(settings.autoSendMerc.dokunma || []);
+                    for (let i = allMercs.length - 1; i >= 0; i--) if (allMercs[i]._isElite || elitIds.has(allMercs[i].id) || dokunma.has(allMercs[i].id)) allMercs.splice(i, 1);
                     let mercId = settings.autoSendMerc.mercenaryId;
 
                     if (settings.autoSendMerc.autoChooseMerc) {
@@ -269,6 +274,39 @@ export function setupWsRelay() {
                         usolElite2.forEach(es => { if (es.mercenary) eliteIds.add(es.mercenary.id); });
                         allMercs.forEach(m => { if (!m._isElite) m._isElite = eliteIds.has(m.id); });
 
+                        const ucuzSinir = settings.autoSendMerc.applyMercCostLimiter ? (settings.autoSendMerc.maxMercCost || 3000) : 3000;
+                        const ucuzVar = allMercs.some(m => m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= ucuzSinir);
+                        const usolKalan = ucuzVar ? 0 : (settings.autoSendMerc.usolKalan || 0);
+                        const usolEksik = ((localData.gorevEsya && localData.gorevEsya.maddeler) || []).filter(m => m.usol && !m.tam).length;
+                        const usolGorev = !ucuzVar && !!settings.autoSendMerc.usolGorev && usolEksik > 0;
+                        const usolTavan = settings.autoSendMerc.usolTavan || 6000;
+                        const usolAday = (usolKalan > 0 || usolGorev) ? allMercs.filter(m => m._market === 'usol' && m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= usolTavan).sort((a, b) => (configs[a.id].totalCost || 0) - (configs[b.id].totalCost || 0))[0] : null;
+                        if (usolAday) {
+                            console.log('[COR3 Helper] Auto-send: USOL run with', usolAday.callsign, 'cost:', configs[usolAday.id].totalCost, usolKalan > 0 ? 'remaining: ' + (usolKalan - 1) : 'quest items missing: ' + usolEksik);
+                            if (usolKalan > 0) chrome.storage.sync.set({ autoSendMerc: { ...settings.autoSendMerc, usolKalan: usolKalan - 1 } });
+                            const og = settings.autoSendMerc.olumGorev || 0;
+                            if ((og > 0 && (usolAday.missionsCompleted || 0) >= og) || (settings.autoSendMerc.olumEsikUsol > 0 && (configs[usolAday.id].totalCost || 0) > Math.max(settings.autoSendMerc.olumEsikUsol, 5500))) {
+                                console.log('[COR3 Helper] Auto-send: USOL merc', usolAday.callsign, 'missions', usolAday.missionsCompleted, '— risky decisions');
+                                chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [usolAday.id]: Date.now() } }));
+                            }
+                            setAutoSendUsolSkipped(false);
+                            proceedWithMerc(usolAday.id, allMercs, settings, localData);
+                            return;
+                        }
+                        const olumEsik = settings.autoSendMerc.olumEsik > 0 ? Math.max(settings.autoSendMerc.olumEsik, 2500) : 0;
+                        const olumEsikUsol = settings.autoSendMerc.olumEsikUsol > 0 ? Math.max(settings.autoSendMerc.olumEsikUsol, 5500) : 0;
+                        const pahali = (m) => { const c = (configs[m.id] && configs[m.id].totalCost) || 0; return m._market === 'usol' ? olumEsikUsol > 0 && c > olumEsikUsol : olumEsik > 0 && c > olumEsik; };
+                        const olumGorevK = settings.autoSendMerc.olumGorev || 0;
+                        const kurbanMi = (m) => pahali(m) || (olumGorevK > 0 && (m.missionsCompleted || 0) >= olumGorevK);
+                        const kurban = !ucuzVar ? allMercs.filter(m => m.status === 'AVAILABLE' && configs[m.id] && kurbanMi(m)).sort((a, b) => (configs[a.id].riskScore || 0) < (configs[b.id].riskScore || 0) ? 1 : -1) : [];
+                        if (kurban.length > 0) {
+                            const k = kurban[0];
+                            console.log('[COR3 Helper] Auto-send: sending merc to die (risky decisions):', k.callsign, 'cost:', configs[k.id].totalCost, 'missions:', k.missionsCompleted);
+                            chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [k.id]: Date.now() } }));
+                            setAutoSendUsolSkipped(false);
+                            proceedWithMerc(k.id, allMercs, settings, localData);
+                            return;
+                        }
                         let available = allMercs.filter(m => m.status === 'AVAILABLE' && configs[m.id]);
                         if (ignoreElite) available = available.filter(m => !m._isElite);
                         if (settings.autoSendMerc.applyMercCostLimiter) {
@@ -292,6 +330,11 @@ export function setupWsRelay() {
                                 return 0;
                             });
                             mercId = available[0].id;
+                            const olumGorev = settings.autoSendMerc.olumGorev || 0;
+                            if (olumGorev > 0 && (available[0].missionsCompleted || 0) >= olumGorev) {
+                                console.log('[COR3 Helper] Auto-send: merc reached', available[0].missionsCompleted, 'missions (>=', olumGorev, ') — risky decisions');
+                                chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [mercId]: Date.now() } }));
+                            }
                             console.log('[COR3 Helper] Auto-choose merc: selected', available[0].callsign, '(' + available[0]._market + ') cost:', configs[available[0].id].totalCost);
                         } else {
                             console.log('[COR3 Helper] Auto-send: no fitting merc available after filtering');
@@ -389,7 +432,20 @@ export function setupWsRelay() {
                 });
             }
         }
-        if (event.data && event.data.type === 'COR3_WS_STASH_FULL') {
+        if (event.data && event.data.type === 'COR3_WS_STASH_FULL' && !event.data._kontrolEdildi) {
+            const olay = event.data;
+            chrome.storage.local.get('stashData', (r) => {
+                const st = r.stashData || {};
+                const bos = typeof st.availableSpace === 'number' ? st.availableSpace : (st.maxCapacity || 0) - (st.currentUsage || 0);
+                if (bos >= 4 && olay.error !== 'Insufficient stash capacity' && olay.error !== 'stash.error.insufficient_capacity') {
+                    console.log('[COR3 Helper] Auto-send: collect.all error "' + olay.error + '" ignored (stash has ' + bos + ' free) — likely duplicate collect');
+                    setAutoSendCollectRetries(0);
+                    return;
+                }
+                window.postMessage({ ...olay, _kontrolEdildi: true }, '*');
+            });
+        }
+        if (event.data && event.data.type === 'COR3_WS_STASH_FULL' && event.data._kontrolEdildi) {
             setAutoSendCollectRetries(autoSendCollectRetries + 1);
             console.log('[COR3 Helper] Stash full error detected (attempt', autoSendCollectRetries, '/', MAX_COLLECT_RETRIES, ')');
             if (autoSendCollectRetries > MAX_COLLECT_RETRIES) {

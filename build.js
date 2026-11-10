@@ -61,9 +61,12 @@ const staticFiles = [
     'src/planlayici/td-ac.js',
     'src/planlayici/ust-anahtar.js',
     'src/planlayici/gunluk.js',
+    'src/guncelle/guncelle.bat',
+    'src/guncelle/guncelle.ps1',
 ];
 
-const TD_KAYNAK = process.env.TD_KAYNAK || path.join(__dirname, '..', 'cor3-td-bot', 'eklenti');
+const TD_DIS = path.join(__dirname, '..', 'cor3-td-bot', 'eklenti');
+const TD_KAYNAK = process.env.TD_KAYNAK || (fs.existsSync(TD_DIS) ? TD_DIS : path.join(__dirname, 'td-kaynak'));
 
 const staticDirs = [
     'icon',

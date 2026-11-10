@@ -15,7 +15,7 @@ for t in json.load(sys.stdin):
     node sayfa-cdp.js "https://cor3.gg" "setTimeout(()=>location.reload(),100),'ok'"
     echo "$(date +%H:%M:%S) YUKLENDI"
     sleep 30
-    node ext-eval.js "chrome.storage.local.get('ayar').then(r=>chrome.storage.local.set({ayar:Object.assign({},r.ayar,{otomatik:true})})).then(()=>'otomatik acildi')"
+    node ext-eval.js "chrome.storage.local.get('ayar').then(r=>chrome.storage.local.set({ayar:Object.assign({},r.ayar,{otomatik:true}),ayarYazan:{kim:'yükleme betiği',t:Date.now()}})).then(()=>'otomatik acildi')"
     if [ "$1" = "testforce" ]; then sleep 15; echo "$(date +%H:%M:%S) TEST FORCE"; node ext-eval.js @test-force.js; fi
     exit 0
   fi

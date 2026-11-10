@@ -1,3 +1,15 @@
+# COR3 Helper + TD bot (birleşik)
+
+Bu depo, [Femtoce11/cor3-helper](https://github.com/Femtoce11/cor3-helper) eklentisinin üzerine TD botu, planlayıcı ve otomatik expedition eklenmiş sürümüdür.
+
+**Kurulum:** [Son sürümün](https://github.com/RecepDev/cor3-helper-birlesik/releases/latest) zip dosyasını indir, bir klasöre çıkar. Tarayıcıda `chrome://extensions` (Opera: `opera://extensions`) sayfasında geliştirici modunu aç, "Paketlenmemiş öğe yükle" ile klasörü seç.
+
+**Güncelleme:** Eklenti 6 saatte bir yeni sürüm olup olmadığına bakar ve Helper penceresinde gösterir. Yeni sürüm varsa eklenti klasöründeki `guncelle.bat` dosyasına çift tıkla. Dosyalar yenilenir, eklenti maç arasında kendini yeniden yükler. Ayarların korunur.
+
+**Derleme:** `npm install`, sonra `npm run build`. Çıktı `dist/` klasörüne yazılır. TD botu `../cor3-td-bot/eklenti` klasöründen alınır, yoksa `td-kaynak/` kullanılır.
+
+---
+
 # COR3 Helper
 
 A Chrome extension that enhances the [cor3.gg](https://cor3.gg) experience by monitoring markets, expeditions, daily ops, and providing timer alerts — all from a compact popup UI.

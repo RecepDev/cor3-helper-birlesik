@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../popup.css">
+<style>
+:root{--bg:#081419;--kart:#0d1f27;--kart2:#11313c;--cizgi:#1d4b5a;--yazi:#bfe9f5;--soluk:#6f9aa8;--vurgu:#76c1d1;--yesil:#3fcf8e;--kirmizi:#e0525a;--turuncu:#f0b35a;--mavi:#7cc8ff;--rakip:#ffb86b}
+*{box-sizing:border-box}
+body{margin:0;width:340px;background:var(--bg);color:var(--yazi);font:13px/1.4 system-ui,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 10px}
+h1{margin:0;font-size:14px;letter-spacing:.04em;color:var(--vurgu)}
+h1 small{display:block;font-size:10px;color:var(--soluk);font-weight:400;letter-spacing:0}
+#ac{border:0;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;background:var(--vurgu);color:#04232c;font-size:13px}
+.ust{display:flex;align-items:center;gap:6px}
+.yanda body{width:auto;overflow-x:hidden}
+.yanda{scrollbar-width:thin;scrollbar-color:var(--cizgi) var(--bg)}
+#yan{display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;background:var(--kart);border:1px solid var(--cizgi);border-radius:6px;cursor:pointer}
+#yan svg{width:18px;height:18px;fill:none;stroke:var(--vurgu);stroke-width:2}
+#yan.acik{background:var(--kart2);border-color:var(--vurgu)}
+#ac.calisiyor{background:var(--kirmizi);color:#fff}
+#durum{margin:0 14px 10px;padding:8px 10px;background:var(--kart);border:1px solid var(--cizgi);border-radius:6px;font:12px/1.45 ui-monospace,Consolas,monospace}
+#durum .is{color:var(--yesil);word-break:break-word}
+#durum .eski{color:var(--kirmizi)}
+#durum .sayac{color:var(--soluk);font-size:11px}
+nav{display:flex;border-bottom:1px solid var(--cizgi);padding:0 14px}
+nav button{flex:1;background:none;border:0;border-bottom:2px solid transparent;color:var(--soluk);padding:8px 0;cursor:pointer;font:600 12px system-ui,"Segoe UI",sans-serif;letter-spacing:.04em}
+nav button.aktif{color:var(--yazi);border-bottom-color:var(--vurgu)}
+.sekme{display:none}
+.sekme.aktif{display:block}
+section{padding:10px 14px;border-bottom:1px solid var(--cizgi)}
+section:last-child{border-bottom:0}
+h2{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--soluk);font-weight:600}
+.ipucu{font-size:11px;color:var(--soluk);margin:-4px 0 6px}
+label.sat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;cursor:pointer}
+input[type=checkbox]{appearance:none;width:30px;height:16px;border-radius:9px;background:#22343b;position:relative;cursor:pointer;transition:.15s;flex:none;margin:0}
+input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#7c959d;transition:.15s}
+input[type=checkbox]:checked{background:#1d6f86}
+input[type=checkbox]:checked::after{left:16px;background:var(--yazi)}
+input[type=number]{background:var(--kart);color:var(--yazi);border:1px solid var(--cizgi);border-radius:5px;padding:3px 6px;font:inherit;width:72px;flex:none}
+.uyari{color:var(--turuncu)}
+.secim{display:flex;background:var(--kart);border:1px solid var(--cizgi);border-radius:6px;padding:2px;gap:2px}
+.secim button{flex:1;background:none;border:0;border-radius:4px;color:var(--soluk);padding:6px 4px;cursor:pointer;font:600 12px system-ui,"Segoe UI",sans-serif}
+.secim button.aktif{background:var(--kart2);color:var(--yazi);box-shadow:inset 0 0 0 1px var(--vurgu)}
+.secim.kucuk button{padding:5px 2px;font-size:11px}
+.alan{margin-bottom:8px}
+.alan:last-child{margin-bottom:0}
+.alan .baslik{font-size:11px;color:var(--soluk);margin-bottom:4px}
+.kartlar{display:grid;gap:6px}
+.secenek{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--kart);border:1px solid var(--cizgi);border-radius:6px;cursor:pointer}
+.secenek.secili{border-color:var(--vurgu);background:var(--kart2)}
+.secenek input{accent-color:var(--vurgu);margin:2px 0 0;flex:none}
+.secenek .ad{display:flex;align-items:center;gap:5px;font-weight:600}
+.secenek .ad svg{width:12px;height:12px;fill:#f0c75a;flex:none}
+.secenek .alt{font:11px/1.35 ui-monospace,Consolas,monospace;color:var(--soluk)}
+.secenek .not{font-size:10px;color:var(--soluk);margin-top:1px}
+.kapali{opacity:.45;pointer-events:none}
+.ayrac{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--soluk);margin:4px 0 0}
+.ozel{font-size:11px;color:var(--turuncu);margin-top:6px}
+.izgara{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.kutu{background:var(--kart);border:1px solid var(--cizgi);border-radius:6px;padding:6px 8px}
+.kutu b{display:block;font:600 15px/1.2 ui-monospace,Consolas,monospace;color:var(--yazi);font-variant-numeric:tabular-nums}
+.kutu span{font-size:10px;color:var(--soluk);text-transform:uppercase;letter-spacing:.05em}
+.kutu.iyi b{color:var(--yesil)}
+.kutu.kotu b{color:var(--kirmizi)}
+.bos{color:var(--soluk);font-size:12px}
+.cubuk{display:grid;grid-template-columns:70px 1fr 46px;align-items:center;gap:6px;margin:3px 0;font-size:11px}
+.cubuk .ad{color:var(--soluk)}
+.cubuk .yol{height:8px;background:#13262e;border-radius:4px;overflow:hidden}
+.cubuk .dolu{height:100%;border-radius:4px}
+.cubuk .deger{text-align:right;font:11px ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+.grup{margin-bottom:8px}
+.grup:last-child{margin-bottom:0}
+.grup .baslik{font-size:11px;color:var(--yazi);margin-bottom:2px}
+.lejant{display:flex;gap:12px;font-size:10px;color:var(--soluk);margin-bottom:6px}
+.lejant i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;color:var(--soluk);font-weight:600;padding:3px 4px;border-bottom:1px solid var(--cizgi)}
+td{padding:4px;border-bottom:1px solid #13303a;font-variant-numeric:tabular-nums}
+td.sayi,th.sayi{text-align:right}
+.dugmeler{display:flex;gap:6px}
+.dugmeler button{flex:1;background:var(--kart);border:1px solid var(--cizgi);color:var(--yazi);border-radius:5px;padding:6px;cursor:pointer;font:inherit;font-size:12px}
+.dugmeler button.tehlike{color:var(--kirmizi)}
+.duzen{margin-top:8px;padding:8px;background:var(--kart);border:1px solid var(--cizgi);border-radius:6px}
+.cipler{display:flex;flex-wrap:wrap;gap:4px}
+.cip{background:var(--bg);border:1px solid var(--cizgi);color:var(--soluk);border-radius:12px;padding:3px 9px;cursor:pointer;font:600 11px system-ui,"Segoe UI",sans-serif;text-transform:capitalize}
+.giris{padding:6px 0;border-top:1px solid var(--cizgi)}
+.giris .bas{display:flex;align-items:baseline;gap:8px;font-size:12px}
+.giris .bas .zaman{color:var(--soluk);min-width:86px}
+.giris .bas .skor{font-weight:700;font-variant-numeric:tabular-nums}
+.giris .bas .net{margin-left:auto;font:600 12px ui-monospace,Consolas,monospace}
+.kareler{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px}
+.kare{width:10px;height:10px;border-radius:2px}
+.kare.g{background:var(--yesil)}
+.kare.m{background:var(--kirmizi)}
+.kare.x{background:var(--cizgi)}
+.cip.aktif{color:var(--yazi);border-color:var(--vurgu);background:var(--kart2)}
+input[type=text]{width:100%;background:var(--bg);color:var(--yazi);border:1px solid var(--cizgi);border-radius:5px;padding:5px 7px;font:inherit}
+.dugmeler button:disabled{opacity:.4;cursor:default}
+details{border-bottom:1px solid var(--cizgi)}
+details summary{list-style:none;cursor:pointer;padding:10px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--soluk);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"";width:6px;height:6px;border-right:1.5px solid var(--soluk);border-bottom:1.5px solid var(--soluk);transform:rotate(45deg)}
+details[open] summary::after{transform:rotate(-135deg)}
+details .ic{padding:0 14px 10px}
+body{--bg:var(--bg-primary,#081419);--kart:var(--bg-card,#0d1f27);--kart2:var(--bg-option,#11313c);--cizgi:var(--border,#1d4b5a);--yazi:var(--text,#bfe9f5);--soluk:var(--text-secondary,#6f9aa8);--vurgu:var(--accent,#76c1d1);--yesil:var(--accent-green,#3fcf8e);--kirmizi:var(--accent-red,#e0525a);--turuncu:var(--accent-orange,#f0b35a)}
+body{width:340px;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:var(--bg);background-attachment:fixed}
+body.theme-default{background:radial-gradient(123.22% 164.72% at 0% 0%,#141822 6.3%,#05080b 65.02%),radial-gradient(211.52% 215.76% at 136.28% -75.37%,#141822 33.43%,#14182200 65.02%)}
+.yanda body{width:auto}
+button{width:auto;margin:0;transition:background-color .2s,border-color .2s}
+button:hover{background-color:inherit}
+input,select{width:auto;margin:0}
+h1{font-size:15px;font-weight:700;color:var(--accent-light-cyan,var(--vurgu))}
+h2{font-size:14px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--accent-light-cyan,var(--vurgu));margin-bottom:8px}
+label.sat{font-weight:600;font-size:12.5px}
+#ac{background:var(--yesil);color:#05210f;border-radius:6px}
+#ac:hover{filter:brightness(1.1);background:var(--yesil)}
+#ac.calisiyor{background:var(--kirmizi);color:#fff}
+#durum,.kutu,.secenek,.secim,#yan{border-radius:8px}
+#durum{background:var(--kart);border-color:var(--cizgi)}
+section{border-bottom:0;border-top:1px solid var(--cizgi)}
+section:first-child{border-top:0}
+nav button{font-family:inherit;font-size:12.5px}
+nav button.aktif{color:var(--accent-light-cyan,var(--yazi))}
+.secim button{font-family:inherit}
+.secim button.aktif{background:var(--btn-bg,var(--kart2));color:var(--yazi);box-shadow:inset 0 0 0 1px var(--vurgu)}
+.dugmeler button{background:var(--btn-small-bg,var(--kart));border-color:var(--cizgi);font-weight:600}
+.dugmeler button:hover{background:var(--btn-small-hover,var(--kart2))}
+.secenek{background:var(--kart)}
+.secenek.secili{background:var(--kart2);border-color:var(--vurgu)}
+input[type=checkbox]{width:32px;height:18px;border-radius:18px;background:var(--cizgi);padding:0;border:0}
+input[type=checkbox]::after{top:2px;left:2px;width:14px;height:14px;background:var(--text-primary,#fff)}
+input[type=checkbox]:checked{background:var(--yesil)}
+input[type=checkbox]:checked::after{left:16px;background:var(--text-primary,#fff)}
+input[type=number],input[type=text],input[type=time]{background:var(--kart);color:var(--yazi);border:1px solid var(--text-dim,var(--cizgi));border-radius:5px;padding:3px 6px}
+input[type=number]{width:72px;text-align:left}
+input[type=time]{width:86px}
+label.sat>span:has(input[type=time]){display:flex;align-items:center;gap:4px;flex:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>COR3 TD BOT<small id="surum"></small></h1>
+  <div class="ust"><button id="yan" title="Sayfanın sağına sabitle"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button><button id="ac">Başlat</button></div>
+</header>
+<div id="durum"></div>
+<nav>
+  <button data-sekme="oyna">Oyna</button>
+  <button data-sekme="analiz">Analiz</button>
+  <button data-sekme="ayarlar">Ayarlar</button>
+  <button data-sekme="para" id="paraSekme" hidden>Para</button>
+</nav>
+
+<div class="sekme" id="s-oyna">
+  <section>
+    <div class="alan">
+      <div class="baslik">Mod</div>
+      <div class="secim" data-secim="mod"><button data-v="free">Free Play</button><button data-v="rating">Rating</button></div>
+    </div>
+    <div class="alan">
+      <div class="baslik">Gelir birimi</div>
+      <div class="secim kucuk" data-secim="gelir"><button data-v="kapali">Gönderme</button><button data-v="karma">Titan + brute</button><button data-v="titan">Yalnız titan</button></div>
+    </div>
+    <label class="sat">Tam otomatik (maça kendisi girer) <input type="checkbox" data-k="otomatik"></label>
+    <label class="sat">Kazanınca rematch, kaybedince çık <input type="checkbox" data-k="rematch"></label>
+    <label class="sat">Maç uzun ya da riskliyse rematch yapma <input type="checkbox" data-k="rematchKac"></label>
+    <label class="sat">İnsan gibi oyna (beklemeli) <input type="checkbox" data-k="insanGibi"></label>
+    <label class="sat">Gelir göstergesi <input type="checkbox" data-k="gelirGoster"></label>
+  </section>
+  <section>
+    <h2>Strateji</h2>
+    <div class="kartlar" id="hazirlar"></div>
+    <div class="ozel" id="ozelNot"></div>
+  </section>
+  <section>
+    <h2>Deste</h2>
+    <label class="sat">Desteyi bot seçsin <input type="checkbox" data-k="desteSec"></label>
+    <div class="kartlar" id="desteler"></div>
+    <div class="duzen" id="desteDuzen">
+      <div class="alan"><div class="baslik">Düzenle <span id="desteSayi"></span></div><div class="cipler" id="desteCip"></div></div>
+      <div class="alan"><input type="text" id="desteAd" placeholder="Deste adı" maxlength="40"></div>
+      <div class="dugmeler"><button id="desteKaydet">Kaydet</button><button id="desteYeni">Yeni kaydet</button><button id="desteSil" class="tehlike">Sil</button></div>
+    </div>
+  </section>
+  <section>
+    <h2>Koşu ve sınırlar</h2>
+    <label class="sat uyari">Yeni Rating koşusu satın al (CR) <input type="checkbox" data-k="kosuSatinAl"></label>
+    <label class="sat">En çok kaç koşu (0 = sınırsız) <input type="number" data-k="kosuLimiti" min="0" step="1"></label>
+    <label class="sat uyari">CR bunun altına inmesin (0 = kapalı) <input type="number" data-k="crAltSinir" min="0" step="1000"></label>
+    <label class="sat">Kaç maç sonra dur (0 = sınırsız) <input type="number" data-k="macLimiti" min="0" step="1"></label>
+    <label class="sat">Kaybedince bekle, dk (0 = kapalı) <input type="number" data-k="kayipMolaDk" min="0" step="1"></label>
+  </section>
+  <section>
+    <h2>Bu maç</h2>
+    <div class="izgara" id="mac"></div>
+  </section>
+</div>
+
+<div class="sekme" id="s-analiz">
+  <section>
+    <div class="secim kucuk" id="analizSecim"><button data-v="son20">Son 20</button><button data-v="rating">Rating</button><button data-v="free">Free</button><button data-v="tumu">Tümü</button></div>
+  </section>
+  <div id="analiz"></div>
+  <section>
+    <h2>Girişler</h2>
+    <div id="girisOzet"></div>
+    <div id="girisler"></div>
+  </section>
+  <section>
+    <div class="dugmeler"><button id="indir">Kayıtları indir</button><button id="kayitSil" class="tehlike">Kayıtları sil</button></div>
+  </section>
+</div>
+
+<div class="sekme" id="s-ayarlar">
+  <details open>
+    <summary>Maç içi hamleler</summary>
+    <div class="ic">
+      <label class="sat">Kule al <input type="checkbox" data-k="al"></label>
+      <label class="sat">Birleştir <input type="checkbox" data-k="birlestir"></label>
+      <label class="sat">Freeze'leri yaymaya çalış (birleştirirken) <input type="checkbox" data-k="freezeYayil"></label>
+      <label class="sat">Yan yana freeze'leri birleştir (köşedeki kalır) <input type="checkbox" data-k="freezeYanYanaBirlestir"></label>
+      <label class="sat">Freeze'i az birleştir, universal'la hiç (tahta dolmadıkça) <input type="checkbox" data-k="freezeAzBirlestir"></label>
+      <label class="sat">Kısa menzilli kuleyi kenardan içe çekme (sniper hariç) <input type="checkbox" data-k="icereCekme"></label>
+      <label class="sat">Freeze yolu az kapsıyorsa freeze'e öncelik <input type="checkbox" data-k="freezeOncelik"></label>
+      <label class="sat">Freeze önceliği şu dalgadan <input type="number" data-k="freezeOncelikDalga" min="0" step="1"></label>
+      <label class="sat">Tür yükselt <input type="checkbox" data-k="yukselt"></label>
+      <label class="sat">Gelen birime göre yükselt <input type="checkbox" data-k="tehditYukselt"></label>
+      <label class="sat">Boss yaklaşınca boss'a iyi gelen türü yükselt <input type="checkbox" data-k="bossYukselt"></label>
+      <label class="sat">Tür yükseltmesine şu dalgadan başla <input type="number" data-k="yukseltmeDalga" min="0" step="1"></label>
+      <label class="sat">Bu dalgadan önce yalnız can şu kadar ya da azsa yükselt <input type="number" data-k="yukseltmeAcilCan" min="0" step="1"></label>
+      <label class="sat">En yüksek tür seviyesi (2 = panelde LVL 3, 0 = sınırsız) <input type="number" data-k="turTavan" min="0" step="1"></label>
+      <label class="sat">Geç oyunda pahalı yükseltme yerine rakibe birim <input type="checkbox" data-k="gecOyun"></label>
+      <label class="sat">Tahta doluyken birime geçiş şu dalgadan (0 = birim açılınca) <input type="number" data-k="gecOyunDalga" min="1" step="1"></label>
+      <label class="sat">Yükseltme verim sınırı (tahta %, 1000 altına) <input type="number" data-k="gecVerimEsik" min="0" step="0.1"></label>
+      <label class="sat">İki universal'ı birleştirme (yalnız tahta tam doluyken L1+L1) <input type="checkbox" data-k="universalCiftYok"></label>
+      <label class="sat">Vuramayan kuleyi önce birleştir (iyi yerdeki kalır) <input type="checkbox" data-k="oluBirlestir"></label>
+      <label class="sat">Puddle'ı az geliştir (yükseltme ve birleştirme) <input type="checkbox" data-k="puddleAz"></label>
+      <label class="sat">Puddle şu dalgaya kadar az <input type="number" data-k="puddleDalga" min="0" step="1"></label>
+      <label class="sat">Splash, acid, puddle yan yana kalsın <input type="checkbox" data-k="alanSinerji"></label>
+      <label class="sat">Sniper ve gatling arkada, kenar kısa menzile <input type="checkbox" data-k="arkaYerlesim"></label>
+      <label class="sat">Maç başında otomatik hazır <input type="checkbox" data-k="hazir"></label>
+    </div>
+  </details>
+  <details open>
+    <summary>Gelir ve sabotaj</summary>
+    <div class="ic">
+      <label class="sat">Gelir için en az kule <input type="number" data-k="ekonomiMinKule" min="0" step="1"></label>
+      <label class="sat">Yalnız yola vurabilen kuleleri say <input type="checkbox" data-k="etkiliKule"></label>
+      <label class="sat">Erken dönemde hasar yetmeyecekse önce kule al <input type="checkbox" data-k="erkenKule"></label>
+      <label class="sat">Maç boyunca hasar yetmeyecekse önce kule al <input type="checkbox" data-k="zayifKule"></label>
+      <label class="sat">Üst 2 sırada az kule varsa önce kule al <input type="checkbox" data-k="kotuDizilimKule"></label>
+      <label class="sat">Üst 2 sırada en az kule <input type="number" data-k="ustSiraEnAz" min="0" step="1"></label>
+      <label class="sat">Erken titan (ilk dalgalarda daha az kuleyle) <input type="checkbox" data-k="erkenTitan"></label>
+      <label class="sat">Erken dönemde en az kule <input type="number" data-k="erkenMinKule" min="1" step="1"></label>
+      <label class="sat">Her türe bir kez 1. seviye (80 altın) <input type="checkbox" data-k="ilkSeviye"></label>
+      <label class="sat">1. seviyeler şu dalgadan <input type="number" data-k="ilkSeviyeDalga" min="0" step="1"></label>
+      <label class="sat">Boş kare varken yükseltme yok, kule al (tüm maç) <input type="checkbox" data-k="deployOnce"></label>
+      <label class="sat">Erken dönemde yükseltme yerine kule al (boş kare varken) <input type="checkbox" data-k="erkenDeploy"></label>
+      <label class="sat">Erken dönemde hasar yetse de tür yükselt <input type="checkbox" data-k="erkenYukseltme"></label>
+      <label class="sat">Hasar yetiyor sınırı (gelecek 2 dalga, ilerleme) <input type="number" data-k="yeterEsik" min="0.2" max="1" step="0.05"></label>
+      <label class="sat">Erken dönem şu dalgaya kadar <input type="number" data-k="erkenTitanDalga" min="3" step="1"></label>
+      <label class="sat">Rakip gelirde öndeyse savunma zayıfken de dalga başına 1 birim <input type="checkbox" data-k="gelirTakip"></label>
+      <label class="sat">Bu kadar öndeyse (gelir farkı) <input type="number" data-k="gelirFarkEsik" min="0" step="10"></label>
+      <label class="sat">Gelirde çok öndeysek önce savunma <input type="checkbox" data-k="liderSinir"></label>
+      <label class="sat">Rakip pasifse (8. dalgadan sonra gelir yok) önce savunma <input type="checkbox" data-k="pasifRakip"></label>
+      <label class="sat">Canımız iyiyse (12+, son 3 dalga sabit) yine de yatırım <input type="checkbox" data-k="canOkYatir"></label>
+      <label class="sat">Titan basan rakipte karşı sabotajı ertele <input type="checkbox" data-k="rushKarsiYok"></label>
+      <label class="sat">Çok önde sayılma farkı <input type="number" data-k="liderFark" min="0" step="50"></label>
+      <label class="sat">Gelir şu dalgadan itibaren <input type="number" data-k="ekonomiBaslangic" min="0" step="1"></label>
+      <label class="sat">Birim gönder (sabotaj) <input type="checkbox" data-k="sabotaj"></label>
+      <label class="sat">Birimi rakibin kulelerine göre seç <input type="checkbox" data-k="rakipAnaliz"></label>
+      <label class="sat">Rakipte acid/puddle varsa scout gönderme <input type="checkbox" data-k="acidHizliYok"></label>
+      <label class="sat">Rakibin ilk kuleleri kötüyse erken öldürmeye çalış (3-8. dalga) <input type="checkbox" data-k="erkenOldur"></label>
+      <label class="sat">Rakip zayıflayınca saldırı baskısı <input type="checkbox" data-k="saldiriItme"></label>
+    </div>
+  </details>
+  <details>
+    <summary>Boss</summary>
+    <div class="ic">
+      <label class="sat">Boss'ta rakip kulelerine göre karşı sabotaj <input type="checkbox" data-k="bossKarsi"></label>
+      <label class="sat">Karşı sabotaja altının en çok (oran) <input type="number" data-k="bossKarsiOran" min="0" max="1" step="0.1"></label>
+      <label class="sat">Boss öncesi birim gönderme <input type="checkbox" data-k="bossSavunma"></label>
+      <label class="sat">Kaç dalga önceden <input type="number" data-k="bossSavunmaOnce" min="0" step="1"></label>
+      <label class="sat">Hasarımız boss'a yetiyorsa gelire devam <input type="checkbox" data-k="bossDmgKontrol"></label>
+      <label class="sat">Yetiyor sayılma sınırı (tahmini ilerleme) <input type="number" data-k="bossGuvenEsik" min="0.2" max="1" step="0.05"></label>
+      <label class="sat">Savunma yetmezse titan yok (hazırlık) <input type="checkbox" data-k="bossHazirlik"></label>
+      <label class="sat">Boss öncesi parayı kuleye/yükseltmeye harca, biriktirme <input type="checkbox" data-k="bossOncesiHarca"></label>
+      <label class="sat">Hazırlık kaç dalga önceden <input type="number" data-k="bossHazirlikOnce" min="0" step="1"></label>
+      <label class="sat">Her boss dalgasında sabotaj <input type="checkbox" data-k="bossSabotaj"></label>
+      <label class="sat">Boss sabotajı şu dalgadan <input type="number" data-k="bossSabotajDalga" min="0" step="10"></label>
+      <label class="sat">Boss için kaç dalga önce biriktir <input type="number" data-k="biriktirOnce" min="0" step="1"></label>
+      <label class="sat">Saldırı şu dalgadan itibaren <input type="number" data-k="sabotajBaslangic" min="0" step="1"></label>
+    </div>
+  </details>
+  <details>
+    <summary>Ekran ve güvenlik</summary>
+    <div class="ic">
+      <label class="sat">Diğer pencereleri kapat <input type="checkbox" data-k="pencereKapat"></label>
+      <label class="sat">Takılırsa sayfayı yenile (bekçi) <input type="checkbox" data-k="bekci"></label>
+      <label class="sat">Bekçi süresi (dk) <input type="number" data-k="bekciDk" min="2" step="1"></label>
+      <label class="sat">Rematch yok: şu dalgadan uzun maç <input type="number" data-k="rematchUzunDalga" min="1" step="1"></label>
+      <label class="sat">Rematch yok: can şuna indiyse <input type="number" data-k="rematchRiskCan" min="0" step="1"></label>
+    </div>
+  </details>
+  <details>
+    <summary>İnsan gibi oyna süreleri</summary>
+    <div class="ic">
+      <label class="sat">Hamle arası en az (ms) <input type="number" data-k="beklemeMin" min="100" step="100"></label>
+      <label class="sat">Hamle arası en çok (ms) <input type="number" data-k="beklemeMax" min="100" step="100"></label>
+      <label class="sat">Maç arası mola en az (sn) <input type="number" data-k="molaMin" min="0" step="5"></label>
+      <label class="sat">Maç arası mola en çok (sn) <input type="number" data-k="molaMax" min="0" step="5"></label>
+      <label class="sat">Uzun ara: her kaç maçta <input type="number" data-k="uzunAraHer" min="0" step="1"></label>
+      <label class="sat">Uzun ara süresi (dk) <input type="number" data-k="uzunAraDk" min="0" step="1"></label>
+    </div>
+  </details>
+  <details>
+    <summary>İnce ayar</summary>
+    <div class="ic">
+      <label class="sat">Kule alma önceliği (x) <input type="number" data-k="kuleTercih" min="0.5" max="5" step="0.1"></label>
+      <label class="sat">Pahalı yükseltme için altın yığma, yetene harca <input type="checkbox" data-k="biriktirmeSiniri"></label>
+      <label class="sat">Bu kadar altın varsa daha kolay harca <input type="number" data-k="bosAltin" min="0" step="100"></label>
+      <label class="sat">Güvenli ilerleme sınırı <input type="number" data-k="guvenliIlerleme" min="0.3" max="1" step="0.05"></label>
+      <label class="sat">Gelir için en az can <input type="number" data-k="ekonomiMinCan" min="0" step="1"></label>
+      <label class="sat">Can 3 dalgadır sabitse en az can kuralını atla <input type="checkbox" data-k="sabitCanDevam"></label>
+      <label class="sat">Geliri kesen can kaybı (2 dalgada) <input type="number" data-k="ekonomiCanKaybi" min="1" step="1"></label>
+      <label class="sat">Gelir yedeği (altın) <input type="number" data-k="ekonomiYedek" min="0" step="50"></label>
+      <label class="sat">2+ aynı kule varsa önce tür yükselt (0 = kapalı) <input type="number" data-k="ikiliSeviye" min="0" step="1"></label>
+      <label class="sat">Ana silaha odak (üs) <input type="number" data-k="yogunluk" min="0" max="4" step="0.25"></label>
+      <label class="sat">Az olan silahı yükseltme (pay sınırı) <input type="number" data-k="minPay" min="0" max="1" step="0.05"></label>
+      <label class="sat">Yükseltme min. verim <input type="number" data-k="minOran" min="0" step="0.01"></label>
+      <label class="sat">Gelir için altın eşiği <input type="number" data-k="ekonomiAltin" min="300" step="100"></label>
+    </div>
+  </details>
+  <section>
+    <div class="dugmeler"><button id="sifirla">Sayaçları sıfırla</button></div>
+  </section>
+  <section>
+    <h2>Ayarları paylaş</h2>
+    <div class="ipucu">Dışa aktarılan dosya başka kurulumda içe aktarılınca tüm ayarlar aynı olur. Bot açık, tam otomatik ve koşu satın alma içe aktarmada değişmez.</div>
+    <div class="dugmeler"><button id="ayarDis">Dışa aktar</button><button id="ayarIc">İçe aktar</button></div>
+    <div class="dugmeler" style="margin-top:6px"><button id="gunlukIndir">Günlüğü indir (son 7 gün)</button></div>
+    <input type="file" id="ayarDosya" accept=".json,application/json" hidden>
+    <div class="ozel" id="ayarNot"></div>
+  </section>
+</div>
+<div class="sekme" id="s-para">
+  <section>
+    <h2>Planlayıcı</h2>
+    <div class="ipucu">Store job saatlerine göre hangi sunucularda değerli dosya aranıp satılabileceğini hesaplar. Yalnız öner açıkken hiçbir şey yapmaz.</div>
+    <label class="sat">Planlayıcı açık <input type="checkbox" data-p="acik"></label>
+    <label class="sat">Yalnız öner (çalıştırma) <input type="checkbox" data-p="oneri"></label>
+    <label class="sat">Arama, indirme ve force kapalı <input type="checkbox" data-p="aramaKapali"></label>
+    <label class="sat">Arama/force kapalı saatler <span><input type="time" data-p="sessizBas" style="background:var(--kart);color:var(--yazi);border:1px solid var(--cizgi);border-radius:5px;font:inherit"> - <input type="time" data-p="sessizBit" style="background:var(--kart);color:var(--yazi);border:1px solid var(--cizgi);border-radius:5px;font:inherit"></span></label>
+    <div class="ipucu">Bu ikisi yalnız arama/indirme/satış/force döngüsünü durdurur; Helper jobları, günlük görev ve TD sürer. Saat boşsa kısıt yok.</div>
+    <label class="sat">Birikim: dolunca indir ve sat <input type="checkbox" data-p="birikim"></label>
+    <div class="ipucu">Açıkken çift tur yerine çalışır. Arama bakım başlatmaz, indirme başlatır. Joblar bitince her "tarama arası"nda yalnız arama yapılır; bir sunucunun dosya sayısı art arda "dolu sayma" kadar taramada artmazsa indirilip satılır. Job yolundaki sunucular yalnız store resetine bakım + pay kadar süre varken indirilir ve hemen force edilir.</div>
+    <label class="sat">Birikim: tarama arası, dk <input type="number" data-p="taramaDk" min="15" step="5"></label>
+    <label class="sat">Birikim: dolu sayma, tarama <input type="number" data-p="doluTarama" min="1" step="1"></label>
+    <label class="sat">Çift tur stratejisi <input type="checkbox" data-p="ciftTur"></label>
+    <div class="ipucu">Açıkken: önce store jobları biter. Sonraki store'a uzun süre varsa hemen 1. tur (tüm sunucularda arama + satış, force yok). Sonraki store'a bakım süresi + pay + tur süresi kalınca 2. tur: tekrar arama + satış, sonra tüm sunucular force; bakımlar job saatinden önce biter. Kısa arada yalnız 2. tur yapılır. "Döngü arası" bu modda kullanılmaz.</div>
+    <label class="sat">Çift tur: bir turun süresi, dk <input type="number" data-p="ciftTurDk" min="5" step="5"></label>
+    <label class="sat">Toplu satış: en az dosya (0 = her turda sat) <input type="number" data-p="topluSatis" min="0" step="1"></label>
+    <label class="sat">Kullanılan sunucuyu bakıma sok (force) <input type="checkbox" data-p="force"></label>
+    <label class="sat">Yetişmese de job çakışmasını azaltıyorsa force <input type="checkbox" data-p="kismiForce"></label>
+    <label class="sat">Force'tan önce "görev yapacak mısın?" diye sor <input type="checkbox" data-p="gorevSor"></label>
+    <label class="sat">Soruya cevap gelmezse force, dk <input type="number" data-p="gorevSorDk" min="1" step="1"></label>
+    <label class="sat">Pay, dk <input type="number" data-p="payDk" min="0" step="5"></label>
+    <label class="sat">Job yapma süresi, dk <input type="number" data-p="jobPencereDk" min="0" step="10"></label>
+    <label class="sat">Bilinmeyen bakım süresi, dk (0 = görülen en uzun) <input type="number" data-p="bilinmeyenDk" min="0" step="10"></label>
+    <label class="sat">Döngü arası, dk <input type="number" data-p="aralikDk" min="5" step="5"></label>
+    <div class="alan"><div class="ipucu">Hiç dokunulmayacak sunucular (virgülle)</div><input type="text" data-p="haric" style="width:100%;background:var(--kart);color:var(--yazi);border:1px solid var(--cizgi);border-radius:5px;padding:4px 6px;font:inherit"></div>
+    <div class="dugmeler"><button id="planHesapla">Şimdi hesapla</button><button id="planSimdi">Döngüyü başlat</button></div>
+  </section>
+  <section><h2>Tavsiye edilen alımlar</h2><div class="ipucu">Simülatör formülüyle her donanım kombinasyonu ve yeni yazılım denenir; önce hiç açılamayan sunucuları açanlar, sonra harcanan CR başına en çok gelir getirenler üstte. Satın alma yapılmaz.</div><div class="dugmeler"><button id="oneriHesapla">Yeniden hesapla</button></div><div id="oneriListe" style="margin-top:6px"></div></section>
+  <section><h2>Store'lar</h2><div id="planMagaza"></div></section>
+  <section><h2>Sunucular</h2><div id="planSunucu"></div></section>
+  <section><h2>Kayıt</h2><div id="planLog" style="font:11px/1.4 ui-monospace,Consolas,monospace;color:var(--soluk);white-space:pre-wrap"></div></section>
+</div>
+<script src="popup.js"></script>
+<script src="plan-ui.js"></script>
+<script src="oneri-ui.js"></script>
+</body>
+</html>

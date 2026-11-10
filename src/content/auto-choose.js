@@ -13,8 +13,9 @@ export function checkAutoChooseFromContent(decisions) {
         const getRidOfVeterans = !!mods.getRidOfVeterans;
 
         // Load expedition data for veteran check
-        chrome.storage.local.get('expeditionsData', (expResult) => {
+        chrome.storage.local.get(['expeditionsData', 'olumMerc', 'kararDeney', 'kararGuvenli'], (expResult) => {
             const expeditions = expResult.expeditionsData || [];
+            const olumMerc = expResult.olumMerc || {};
 
             for (const d of decisions) {
                 if (d.isResolved || !d.decisionDeadline || !Array.isArray(d.decisionOptions)) continue;
@@ -35,9 +36,19 @@ export function checkAutoChooseFromContent(decisions) {
                     }
                 }
 
+                const olumExp = d.expeditionId && expeditions.find(e => e.id === d.expeditionId);
+                const guvenli = !!expResult.kararGuvenli;
+                const olum = !!(olumExp && olumExp.mercenary && olumMerc[olumExp.mercenary.id]) || (!guvenli && !!expResult.kararDeney && parseInt(String(d.expeditionId || '0').slice(-1), 16) % 2 === 0);
                 let bestOpt = null;
                 let bestScore = -Infinity;
-                for (const opt of d.decisionOptions) {
+                if (olum) for (const opt of d.decisionOptions) {
+                    if (opt.riskModifier > bestScore) { bestScore = opt.riskModifier; bestOpt = opt; }
+                }
+                if (guvenli && !olum) for (const opt of d.decisionOptions) {
+                    const sc = -opt.riskModifier * 1000 + opt.lootModifier;
+                    if (sc > bestScore) { bestScore = sc; bestOpt = opt; }
+                }
+                if (!olum && !guvenli) for (const opt of d.decisionOptions) {
                     const score = Math.round((opt.lootModifier * lootMod) + ((opt.riskModifier * riskMod) * (((d.riskScore + Math.abs(opt.riskModifier)) / 10) || 1)));
                     if (score > bestScore) { bestScore = score; bestOpt = opt; }
                 }

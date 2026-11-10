@@ -47,6 +47,7 @@
     if (!db) return;
     const sinir = new Date(Date.now() - 3 * 86400000).toISOString();
     const gunler = {};
+    const gorulen = new Set();
     const gun = (t) => { const k = new Date(t).toLocaleDateString("sv-SE"); return gunler[k] || (gunler[k] = { job: 0, jobCr: 0, kacan: 0, satis: 0, satisCr: 0, depozito: 0, liste: [] }); };
     const saatAd = (t) => new Date(t).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
     try {
@@ -57,20 +58,26 @@
           const x = cur.value, m = String(x.m || "");
           if (x.k === "job") {
             let q;
-            if ((q = /^sonuç: (\S+) (.+?) @\S+ done \+(-?\d+) CR/.exec(m))) { const g = gun(x.t); const a = q[1].toUpperCase() + " " + q[2]; g.kaynak = g.kaynak || {}; const k0 = g.kaynak[a] || (g.kaynak[a] = [0, 0]); k0[0]++; k0[1] += +q[3]; }
-            if ((q = /✅ Job completed: .*🏅(\d+)/.exec(m))) { const g = gun(x.t); g.renown = (g.renown || 0) + +q[1]; }
-            const o = /Auto Jobs Complete: (\d+) done, (\d+) failed(?:, (\d+) skipped)?.*?Net: 💰(-?[\d,.]+)(?: \(deposits: (-?[\d,.]+)\))?/.exec(m);
+            const sonucMu = m.startsWith("sonuç: ");
+            const anahtar = sonucMu ? (x.v && x.v.id ? x.v.id + "|" + (/ (done|failed|skipped)/.exec(m) || [])[1] : m + "|" + String(x.t).slice(0, 13)) : null;
+            if (sonucMu && gorulen.has(anahtar)) { cur.continue(); return; }
+            if (sonucMu) gorulen.add(anahtar);
+            if ((q = /^sonuç: (\S+) (.+?) @\S+ done \+(-?\d+) CR/.exec(m))) { const g = gun(x.t); const a = q[1].toUpperCase() + " " + q[2]; g.kaynak = g.kaynak || {}; const k0 = g.kaynak[a] || (g.kaynak[a] = [0, 0]); k0[0]++; k0[1] += +q[3]; g.job++; g.jobCr += +q[3]; }
+            if ((q = /✅ Job completed: .*🏅(\d+)/.exec(m))) { const g = gun(x.t); g.renownEski = (g.renownEski || 0) + +q[1]; }
             let e = null, f;
             if ((f = /^sonuç: (\S+) (.+?) @(\S+) (failed|skipped)(?: hata: (.+))?$/.exec(m))) e = { m: f[1], ad: f[2], sv: f[3] === "None" ? "" : f[3], ham: f[5] || f[4] };
             else if ((f = /Job skipped \((.+?)\): (.+?) —/.exec(m)) && /market unreachable/.test(f[1])) e = { m: "", ad: f[2], sv: "", ham: "market unreachable" };
             else if ((f = /skipped (\d+ )?job\(s\) due to maintenance: (.+)$/.exec(m))) e = { m: "", ad: (f[1] ? f[1].trim() + " job" : "job"), sv: f[2].split(/,| \(/)[0], ham: "maintenance: " + f[2] };
-            if (e) { const g = gun(x.t); if (g.liste.length < 80) g.liste.push({ s: saatAd(x.t), ...e, ...nedenTr(e.ham) }); }
-            if (o) { const g = gun(x.t); g.job += +o[1]; g.kacan += +o[2] + +(o[3] || 0); g.jobCr += Number(o[4].replace(/[,.]/g, "")) || 0; g.depozito += Number((o[5] || "0").replace(/[,.]/g, "")) || 0; }
-          } else if (x.k === "ws" && m === "← sell.items" && x.v) { const g = gun(x.t); g.satis += (x.v.items || []).length; g.satisCr += x.v.totalPrice || 0; }
+            if (e) { const g = gun(x.t); g.kacan++; if (g.liste.length < 80) g.liste.push({ s: saatAd(x.t), ...e, ...nedenTr(e.ham) }); }
+          } else if (x.k === "ws" && m === "← receive.progress" && x.v && typeof x.v.amount === "number") { const g = gun(x.t); g.renown = (g.renown || 0) + x.v.amount; if (x.v.amount === 3) g.jobP = (g.jobP || 0) + 1; else if (x.v.amount === 10) g.exp = (g.exp || 0) + 1; }
+          else if (x.k === "ws" && m === "← sell.items" && x.v) { const g = gun(x.t); g.satis += (x.v.items || []).length; g.satisCr += x.v.totalPrice || 0; }
           cur.continue();
           return;
         }
         for (const g of Object.values(gunler)) {
+          if (g.renown === undefined && g.renownEski) g.renown = g.renownEski;
+          delete g.renownEski;
+          if ((g.jobP || 0) > g.job) { g.jobTahmini = g.jobP - g.job; g.jobCr += g.job ? Math.round(g.jobCr / g.job * g.jobTahmini) : 0; g.job = g.jobP; }
           g.deneme = g.kacan;
           g.kacan = new Set(g.liste.map((e) => [e.m, e.ad, e.sv, e.n].join("|"))).size;
         }
@@ -108,7 +115,7 @@
       ...kaynak.map((x) => "  " + x),
       `Kaçan joblar: ${g.kacan}`,
       ...kacan.map((x) => "  " + x),
-      `Renown: dün +${g.renown || 0}` + (pr ? ` (son: ${JSON.stringify(pr).slice(0, 120)})` : ""),
+      `Renown: dün +${g.renown || 0} (job ${g.jobP ?? "?"}, expedition ${g.exp || 0})` + (g.jobTahmini ? ` · ${g.jobTahmini} jobun CR'ı ortalamadan tahmin` : "") + (pr ? ` (son: ${JSON.stringify(pr).slice(0, 120)})` : ""),
       rep ? `D4RK itibarı: seviye ${rep.level}, ${sayi(rep.progress || 0)}/${sayi(rep.requiredReputation || 0)}` : "D4RK itibarı: bilinmiyor",
       typeof kredi === "number" ? `Bakiye: ${sayi(kredi)} CR · hedef ${sayi(HEDEF_CR)} CR` + (kalanGun !== null ? ` · bu hızla ~${kalanGun.toFixed(1)} gün (günlük ort. ${sayi(ort)} CR)` : "") : "Bakiye: bilinmiyor",
     ];
@@ -175,6 +182,7 @@
       else if (t - doktor.tdBas > 25 * 60000 && !/bekle|joblar bitmedi|maç bitince dur|durdu|CR sınırı|mola|kayıp sonrası/.test(String(d.sonIs))) { doktor.tdBas = t; duzelt(`TD 25 dk'dır "${d.sonIs}" durumunda takılı, sayfa yenileniyor`, true); }
     } else { doktor.tdIs = d.sonIs; doktor.tdBas = t; }
   });
+  let sonucDegisti = false;
   const son = { tdIs: null, kuyruk: null, plan: new Set(), jobLog: "", valLog: "", sonuc: new Set(), mac: null, kosu: {}, ayar: null, planAyar: null, mesgul: null, planOzet: 0 };
   const logYeni = (l, anahtar, k) => {
     if (!Array.isArray(l) || !l.length) return;
@@ -186,7 +194,8 @@
   const farkYaz = (k, eski, yeni) => {
     if (!eski || !yeni) return;
     const d = Object.keys(yeni).filter((x) => JSON.stringify(eski[x]) !== JSON.stringify(yeni[x]));
-    if (d.length) yaz(k, "ayar değişti: " + d.map((x) => `${x}=${JSON.stringify(yeni[x])}`).join(", ").slice(0, 500));
+    const yz = son.yazan && Date.now() - son.yazan.t < 5000 ? son.yazan.kim : "bilinmiyor (popup dışı: betik ya da başka kod)";
+    if (d.length) yaz(k, "ayar değişti: " + d.map((x) => `${x}=${JSON.stringify(yeni[x])}`).join(", ").slice(0, 500) + " · yazan: " + yz);
   };
   const planIsle = (p) => {
     if (!p) return;
@@ -222,8 +231,10 @@
       const k = r.jobId + r.status;
       if (son.sonuc.has(k)) continue;
       son.sonuc.add(k);
-      if (son.ilkSonuc) yaz("job", `sonuç: ${r.marketKey} ${r.name} @${r.serverName} ${r.status}${r.reward ? " +" + r.reward.credits + " CR" : ""}${r.error ? " hata: " + r.error : ""}`);
+      sonucDegisti = true;
+      if (son.ilkSonuc) yaz("job", `sonuç: ${r.marketKey} ${r.name} @${r.serverName} ${r.status}${r.reward ? " +" + r.reward.credits + " CR" : ""}${r.error ? " hata: " + r.error : ""}`, { id: r.jobId, renown: r.reward ? r.reward.renown : undefined });
     }
+    if (sonucDegisti) { sonucDegisti = false; chrome.storage.local.set({ gunlukSonuc: [...son.sonuc].slice(-600) }); }
     if (d.maclar) {
       const l = d.maclar, m = l[l.length - 1];
       if (m && m.tarih !== son.mac) { if (son.mac !== null) yaz("td", `maç bitti: ${m.sonuc} dalga ${m.dalga} can ${m.can} gelir ${m.gelir}/${m.rakipGelir} ${m.mod}${m.gecersiz ? " geçersiz: " + m.gecersiz : ""}`); son.mac = m.tarih; }
@@ -238,7 +249,7 @@
     if (d.planDurum) planIsle(d.planDurum);
   };
 
-  const WS = /"action":"(maintenance|receive\.credits|receive\.progress|job\.complete|job\.take|tower-defense\.(start\.run|run\.completed|match\.found|leave\.match)|sell\.items|hack\.start)"/;
+  const WS = /"action":"(maintenance|receive\.credits|receive\.progress|job\.complete|job\.take|launch|collect\.all|sell\.item|tower-defense\.(start\.run|run\.completed|match\.found|leave\.match)|sell\.items|hack\.start)"/;
   window.addEventListener("message", (e) => {
     if (e.source !== window || !e.data) return;
     if (e.data.type === "COR3_DAILY_HACK_LOG") { yaz("daily", e.data.message); return; }
@@ -249,6 +260,7 @@
         const p = JSON.parse(e.data.message.slice(e.data.message.indexOf("[")));
         const v = p[1] && p[1].data;
         if (m[1] === "receive.progress" && v) chrome.storage.local.set({ profilIlerleme: { t: Date.now(), data: v } });
+        if (m[1] === "receive.credits" && v && typeof v.newBalance === "number") chrome.storage.local.set({ bakiyeSon: { t: Date.now(), v: v.newBalance } });
         yaz("ws", `${e.data.direction === "sent" ? "→" : "←"} ${m[1]}`, v ? JSON.parse(JSON.stringify(v, (k, x) => (typeof x === "string" && x.length > 200 ? x.slice(0, 200) : x))) : undefined);
       } catch { yaz("ws", m[1]); }
     }
@@ -259,15 +271,18 @@
     db = d;
     temizle();
     yaz("sistem", "sayfa açıldı", { surum: chrome.runtime.getManifest().version, adres: location.href });
-    chrome.storage.local.get(ANAHTAR, (r) => {
+    chrome.storage.local.get([...ANAHTAR, "gunlukSonuc"], (r) => {
       const ilk = {};
       for (const k of ANAHTAR) if (r[k] !== undefined) ilk[k] = r[k];
       son.ayar = r.ayar || null;
       son.planAyar = r.planAyar || null;
       son.jobLog = (r.autoJobsDebugLogs || []).length ? (r.autoJobsDebugLogs.at(-1).timestamp || "") + "|" + (r.autoJobsDebugLogs.at(-1).msg || "") : "";
       son.valLog = (r.valuableDebugLogs || []).length ? (r.valuableDebugLogs.at(-1).timestamp || "") + "|" + (r.valuableDebugLogs.at(-1).msg || "") : "";
-      for (const x of r.autoJobsCompletedResults || []) son.sonuc.add(x.jobId + x.status);
+      if (Array.isArray(r.gunlukSonuc)) for (const k of r.gunlukSonuc) son.sonuc.add(k);
+      else for (const x of r.autoJobsCompletedResults || []) son.sonuc.add(x.jobId + x.status);
       son.ilkSonuc = true;
+      if (Array.isArray(r.gunlukSonuc)) isle({ autoJobsCompletedResults: r.autoJobsCompletedResults || [] });
+      else chrome.storage.local.set({ gunlukSonuc: [...son.sonuc].slice(-600) });
       son.mac = r.maclar && r.maclar.length ? r.maclar.at(-1).tarih : "";
       for (const k of r.kosular || []) son.kosu[k.runId] = `${k.status} ${k.wins}G ${k.losses}M ${k.rewardPaid ?? ""}`;
       isle({ durum: ilk.durum, automationQueueStatus: ilk.automationQueueStatus, planMesgul: ilk.planMesgul });
@@ -276,6 +291,7 @@
         if (ch.gunlukIndir) indir();
         const d = {};
         for (const k of ANAHTAR) if (ch[k]) d[k] = ch[k].newValue;
+        if (ch.ayarYazan) son.yazan = ch.ayarYazan.newValue;
         if (Object.keys(d).length) isle(d);
       });
     });

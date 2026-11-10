@@ -110,6 +110,7 @@ function saveAutoSendMercSettings() {
             console.log("saveAutoSendMercSettings: " + autoChooseMercToggle.checked);
             chrome.storage.sync.set({
                 autoSendMerc: {
+                    ...existing,
                     enabled: isEnabling,
                     autoChooseMerc: autoChooseMercToggle ? autoChooseMercToggle.checked : false,
                     autoChooseUsolFirst: autoChooseUsolFirstToggle ? autoChooseUsolFirstToggle.checked : false,

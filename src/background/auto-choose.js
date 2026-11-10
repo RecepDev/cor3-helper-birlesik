@@ -16,7 +16,7 @@ export async function checkAutoChooseBackground() {
         const lootMod = modifiersEnabled ? (mods.loot ?? 3) : 1;
         const riskMod = modifiersEnabled ? (mods.risk ?? -2) : -1;
 
-        const { expeditionDecisions } = await chrome.storage.local.get('expeditionDecisions');
+        const { expeditionDecisions, expeditionsData, olumMerc, kararDeney, kararGuvenli } = await chrome.storage.local.get(['expeditionDecisions', 'expeditionsData', 'olumMerc', 'kararDeney', 'kararGuvenli']);
         const decisions = expeditionDecisions || [];
         if (decisions.length === 0) return;
 
@@ -28,10 +28,12 @@ export async function checkAutoChooseBackground() {
             if (remaining <= 0) continue;
             if (remaining > 60000) continue;
 
+            const olumExp = d.expeditionId && (expeditionsData || []).find(e => e.id === d.expeditionId);
+            const olum = !!(olumExp && olumExp.mercenary && (olumMerc || {})[olumExp.mercenary.id]) || (!kararGuvenli && !!kararDeney && parseInt(String(d.expeditionId || '0').slice(-1), 16) % 2 === 0);
             let bestOpt = null;
             let bestScore = -Infinity;
             for (const opt of d.decisionOptions) {
-                const score = calcOptionScoreBg(opt, d.riskScore, lootMod, riskMod);
+                const score = olum ? opt.riskModifier : kararGuvenli ? -opt.riskModifier * 1000 + opt.lootModifier : calcOptionScoreBg(opt, d.riskScore, lootMod, riskMod);
                 if (score > bestScore) {
                     bestScore = score;
                     bestOpt = opt;

@@ -36,31 +36,125 @@
             document.body.append(t);
         }
     }
+    const OTO = (d) => (!d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı") || (!d.dom.autoChooseMercToggle && "Asker otomatik seç kapalı (bu kural yalnız otomatik seçimde çalışır)");
+    const OLUM = (d) => OTO(d) || (d.guvenli && "Hiç risk alma açık (öldürme riskli karar gerektirir)");
     const ANAHTAR = [
-        { ad: "TD bot", tip: "td", k: "acik", ipucu: "Tower Defense botu. Açıkken maç oynar; Helper ya da planlayıcı çalışırken ve store jobları bitmeden yeni maça girmez." },
-        { ad: "TD: maç bitince dur", tip: "td", k: "sonrakindeDur", ipucu: "Açınca TD sürmekte olan maçı bitirir, sonra TD botunu kapatır ve bu anahtar kendiliğinden kapanır. Rematch yapılmaz." },
-        { ad: "Helper jobları", tip: "dom", id: "autoFinishAllJobsToggle", ipucu: "Auto Finish All Jobs. Store jobları yenilenince seçili türdeki jobları otomatik alıp yapar." },
-        { ad: "Planlayıcı (arama/satış)", tip: "plan", k: "acik", ipucu: "Değerli dosya arama, indirme, satış ve force turlarını yönetir; daily ops da buna bağlı. Kapatınca hepsi durur." },
-        { ad: "Birikim (dolunca sat)", tip: "plan", k: "birikim", ipucu: "Açıkken çift tur yerine çalışır. Joblar bitince saatte bir yalnız arama yapar (arama bakım başlatmaz). Bir sunucunun dosya sayısı 3 taramada artmazsa dolmuş sayılır, indirilip satılır. Job yolundaki sunucu yalnız store resetine bakım + pay kadar süre varken indirilir ve hemen force edilir." },
-        { ad: "Çift tur", tip: "plan", k: "ciftTur", ipucu: "Store'a uzun süre varsa önce arama ve satış, store yaklaşınca tekrar arama, satış ve force. Kapalıyken 'Döngü arası' süresiyle tek tur çalışır." },
-        { ad: "Force", tip: "plan", k: "force", ipucu: "Satıştan sonra sunucuları bilerek bakıma sokar; bakım job saatinden önce biter. Bakımdan çıkan sunucunun erişimi sıfırlanır, yeniden hack gerekir." },
-        { ad: "Daily ops", tip: "plan", k: "gunluk", ipucu: "Günlük görevi otomatik yapar (her gün 03:00 TR yenilenir, kaçarsa seri sıfırlanır). Planlayıcı açık olmalı." },
-        { ad: "Arama/force kapalı", tip: "plan", k: "aramaKapali", ipucu: "Planlayıcı açık kalır ama arama, satış ve force turlarını başlatmaz. Daily ops, Helper jobları ve TD sürer." },
-        { ad: "Paralı asker gönder", tip: "dom", id: "autoSendMercenaryToggle", ipucu: "Auto Send Mercenary. Expedition dönünce paralı askeri otomatik yeniden gönderir (gönderme ve ücret CR tutar)." },
+        { b: "Tower Defense", ad: "TD bot", tip: "td", k: "acik", ipucu: "Tower Defense botu. Açıkken maç oynar; Helper ya da planlayıcı çalışırken ve store jobları bitmeden yeni maça girmez." },
+        { b: "Tower Defense", ad: "TD: maç bitince dur", tip: "td", k: "sonrakindeDur", kos: (d) => !d.td.acik && "TD bot kapalı", ipucu: "Açınca TD sürmekte olan maçı bitirir, sonra TD botunu kapatır ve bu anahtar kendiliğinden kapanır. Rematch yapılmaz." },
+        { b: "Joblar ve planlayıcı", ad: "Helper jobları", tip: "dom", id: "autoFinishAllJobsToggle", ipucu: "Auto Finish All Jobs. Store jobları yenilenince seçili türdeki jobları otomatik alıp yapar." },
+        { b: "Joblar ve planlayıcı", ad: "Planlayıcı (arama/satış)", tip: "plan", k: "acik", ipucu: "Değerli dosya arama, indirme, satış ve force turlarını yönetir; daily ops da buna bağlı. Kapatınca hepsi durur." },
+        { b: "Joblar ve planlayıcı", ad: "Daily ops", tip: "plan", k: "gunluk", kos: (d) => !d.plan.acik && "Planlayıcı kapalı", ipucu: "Günlük görevi otomatik yapar (her gün 03:00 TR yenilenir, kaçarsa seri sıfırlanır). Planlayıcı açık olmalı." },
+        { b: "Joblar ve planlayıcı", ad: "Birikim (dolunca sat)", tip: "plan", k: "birikim", kos: (d) => !d.plan.acik && "Planlayıcı kapalı", ipucu: "Açıkken çift tur yerine çalışır. Joblar bitince saatte bir yalnız arama yapar (arama bakım başlatmaz). Bir sunucunun dosya sayısı 3 taramada artmazsa dolmuş sayılır, indirilip satılır. Job yolundaki sunucu yalnız store resetine bakım + pay kadar süre varken indirilir ve hemen force edilir." },
+        { b: "Joblar ve planlayıcı", ad: "Çift tur", tip: "plan", k: "ciftTur", kos: (d) => (!d.plan.acik && "Planlayıcı kapalı") || (d.plan.birikim && "Birikim açıkken çift tur çalışmaz"), ipucu: "Store'a uzun süre varsa önce arama ve satış, store yaklaşınca tekrar arama, satış ve force. Kapalıyken 'Döngü arası' süresiyle tek tur çalışır." },
+        { b: "Joblar ve planlayıcı", ad: "Force", tip: "plan", k: "force", kos: (d) => (!d.plan.acik && "Planlayıcı kapalı") || (d.plan.aramaKapali && "Arama/force kapalı açık"), ipucu: "Satıştan sonra sunucuları bilerek bakıma sokar; bakım job saatinden önce biter. Bakımdan çıkan sunucunun erişimi sıfırlanır, yeniden hack gerekir." },
+        { b: "Joblar ve planlayıcı", ad: "Arama/force kapalı", tip: "plan", k: "aramaKapali", kos: (d) => !d.plan.acik && "Planlayıcı kapalı", ipucu: "Planlayıcı açık kalır ama arama, satış ve force turlarını başlatmaz. Daily ops, Helper jobları ve TD sürer." },
+        { b: "Expedition gönderimi", ad: "Paralı asker gönder", tip: "dom", id: "autoSendMercenaryToggle", ipucu: "Auto Send Mercenary. Expedition dönünce ganimeti toplar, günlük sınıra kadar paralı askeri yeniden gönderir (her gönderim CR tutar, +10 renown)." },
+        { b: "Expedition gönderimi", ad: "Asker otomatik seç", tip: "dom", id: "autoChooseMercToggle", kos: (d) => !d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı", ipucu: "Uygun askerler içinden en ucuzunu (eşitse en az riskliyi) seçer. Kapalıyken popup'ta seçili asker gider." },
+        { b: "Expedition gönderimi", ad: "Para yettikçe gönder", tip: "merc", k: "sinirsiz", kos: (d) => !d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı", ipucu: "Açıkken günlük sınır yok: bakiye alt sınırın üstünde oldukça asker gönderilmeye devam eder (askerler dinlenirken beklenir). Kapalıyken 'Expedition / gün' sınırı geçerli." },
+        { b: "Expedition gönderimi", ad: "Gönderim alt bakiye", tip: "sayi", k: "paraAlt", vs: 20000, max: 2000000, kos: (d) => (!d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı") || (!d.m.sinirsiz && "Para yettikçe gönder kapalı"), ipucu: "'Para yettikçe gönder' açıkken bakiye bu sayının altına inince gönderim durur, üstüne çıkınca sürer." },
+        { b: "Expedition gönderimi", ad: "Expedition / gün", tip: "sayi", k: "gunluk", vs: 2, max: 72, kos: (d) => (!d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı") || (d.m.sinirsiz && "Para yettikçe gönder açıkken günlük sınır yok"), ipucu: "Günde en çok kaç expedition gönderilsin (yerel gün). 0 = sınırsız." },
+        { b: "Expedition gönderimi", ad: "USOL: görev eşyası topla", tip: "merc", k: "usolGorev", kos: OTO, ipucu: "USOL'dan çıkan görev eşyaları (Crimper, NIC Nano, Circuit x2, oxygen tank x3) tamamlanana kadar, yalnız ~2k'lık ucuz asker yokken (hepsi dinlenmede) USOL askeri gönderilir (~5.000 CR). Eşyalar tamamlanınca kendiliğinden durur. Elit asker gitmez." },
+        { b: "Asker öldürme", ad: "Öldür: CORE ücret > CR", tip: "sayi", k: "olumEsik", vs: 0, max: 100000, kos: OTO, alt: 2500, ipucu: "CORE askerinin ücreti bu sayının üstündeyse (ya da görev sayısı sınırını geçtiyse) ucuz asker yokken gönderilir ve her seferinde en riskli kararlar seçilir (ölsün diye). Hiç risk alma açıkken de geçerli. (ölsün, yerine 2k'lık yeni asker gelsin). Surface bölgesinde ölüm şansı düşük; her deneme ücret kadar tutar. 0 = kapalı." },
+        { b: "Asker öldürme", ad: "Öldür: USOL ücret > CR", tip: "sayi", k: "olumEsikUsol", vs: 0, max: 100000, kos: OTO, alt: 5500, ipucu: "USOL askerinin ücreti bu sayının üstündeyse (ya da görev sayısı sınırını geçtiyse) ucuz asker yokken gönderilir ve her seferinde en riskli kararlar seçilir. Hiç risk alma açıkken de geçerli. USOL askerleri 5.000'den başladığı için ayrı sınır. 0 = kapalı." },
+        { b: "Asker öldürme", ad: "Öldür: görev sayısı ≥", tip: "sayi", k: "olumGorev", vs: 0, max: 99, kos: OTO, ipucu: "Ucuz asker bu kadar görev tamamladıysa sonraki seferlerinde en riskli kararlar seçilir (10. görevde rütbe atlayıp ~5.500'e pahalanmadan ölsün). 'Hiç risk alma' açıkken de çalışır. 0 = kapalı. Kaçıncı görevde fiyat arttığı Askerler kutusunda öğreniliyor." },
+        { b: "Kararlar ve ganimet", ad: "Expedition kararları", tip: "dom", id: "autoChooseCheckbox", ipucu: "Expedition sırasında gelen seçimleri ganimet/risk puanına göre otomatik yanıtlar." },
+        { b: "Kararlar ve ganimet", ad: "Hiç risk alma", tip: "yerel", k: "kararGuvenli", kos: (d) => !d.dom.autoChooseCheckbox && "Expedition kararları kapalı", ipucu: "Her karar sorusunda en düşük riskli seçenek seçilir (eşitse ganimeti fazla olan). Açıkken karar deneyi çalışmaz; öldürülecek askerler (ücret ya da görev sınırını geçenler) yine en riskli kararla gider." },
+        { b: "Kararlar ve ganimet", ad: "Karar deneyi", tip: "yerel", k: "kararDeney", kos: (d) => (!d.dom.autoChooseCheckbox && "Expedition kararları kapalı") || (d.guvenli && "Hiç risk alma açık"), ipucu: "Seferlerin yarısında en riskli, yarısında normal (güvenli) kararlar seçilir; hangisinin daha çok ganimet getirdiği ölçülür." },
+        { b: "Kararlar ve ganimet", ad: "Ganimeti sat", tip: "merc", k: "ganimetSat", ipucu: "Expedition'dan gelen satılabilir eşyaları otomatik satar. Görev (QUEST) eşyaları ve drone görevinde istenen eşyalar satılmaz." },
+        { b: "Kararlar ve ganimet", ad: "Görev fazlasını sat", tip: "merc", k: "ganimetFazla", kos: (d) => !d.m.ganimetSat && "Ganimeti sat kapalı", ipucu: "Drone görevinde istenen eşyalardan, görevin istediği adetten fazlası da satılır (ör. beanie 3 tane kalır). Kapalıyken bu eşyalar hiç satılmaz." },
     ];
     const kutu = document.createElement("div");
     kutu.id = "cor3Anahtarlar";
     kutu.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:6px 10px;margin-bottom:4px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border)";
+    let sonBolum = null;
     const satirlar = ANAHTAR.map((a) => {
+        if (a.b !== sonBolum) {
+            sonBolum = a.b;
+            const h = document.createElement("div");
+            h.className = "cor3-bolum";
+            h.textContent = a.b;
+            h.style.cssText = "grid-column:1/-1;font-size:10.5px;font-weight:600;color:var(--accent-light-cyan);padding-top:4px;margin-top:2px;border-top:1px solid var(--border)";
+            if (kutu.childElementCount === 0) h.style.cssText += ";border-top:none;margin-top:0;padding-top:0";
+            kutu.append(h);
+        }
         const s = document.createElement("label");
         s.title = a.ipucu;
         s.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:10px;color:var(--text-secondary);cursor:pointer;min-width:0";
-        s.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.ad}</span><span class="alarm-toggle-switch" style="flex:none"><input type="checkbox"><span class="slider-track"></span></span>`;
+        s.innerHTML = a.tip === "sayi"
+            ? `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.ad}</span><input type="number" min="0" max="${a.max}" style="width:52px;flex:none;font-size:10px;padding:1px 3px;background:var(--bg-input,transparent);color:var(--text);border:1px solid var(--border);border-radius:4px">`
+            : `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.ad}</span><span class="alarm-toggle-switch" style="flex:none"><input type="checkbox"><span class="slider-track"></span></span>`;
         const g = s.querySelector("input");
         kutu.append(s);
         return { a, g };
     });
     ust.after(kutu);
+    const aktar = document.createElement("div");
+    aktar.style.cssText = "grid-column:1/-1;display:flex;gap:6px;align-items:center;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);font-size:10px;color:var(--text-secondary)";
+    aktar.innerHTML = `<button type="button" data-a="disa" style="font-size:10px;padding:2px 8px;cursor:pointer">Ayarları dışa aktar</button><button type="button" data-a="ice" style="font-size:10px;padding:2px 8px;cursor:pointer">İçe aktar</button><input type="file" accept=".json,application/json" style="display:none"><span data-not style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>`;
+    kutu.append(aktar);
+    const GH = "https://github.com/RecepDev/cor3-helper-birlesik";
+    const gun = document.createElement("div");
+    gun.style.cssText = "grid-column:1/-1;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--text-secondary)";
+    gun.innerHTML = `<span data-s></span><a href="${GH}" target="_blank" rel="noopener" style="color:var(--accent,inherit)">GitHub</a><a href="${GH}/releases" target="_blank" rel="noopener" style="color:var(--accent,inherit)">Sürüm notları</a><button type="button" data-g style="font-size:10px;padding:2px 8px;cursor:pointer">Güncelleme ara</button><span data-d style="flex-basis:100%"></span>`;
+    kutu.append(gun);
+    const gunCiz = (g) => {
+        const v = chrome.runtime.getManifest().version;
+        gun.querySelector("[data-s]").textContent = "Sürüm " + v;
+        const d = gun.querySelector("[data-d]");
+        d.style.color = "";
+        if (!g) { d.textContent = ""; return; }
+        if (g.disk && g.disk !== v) d.textContent = `${g.disk} indirildi, maç arasında kendini yeniden yükleyecek.`;
+        else if (g.var) { d.textContent = `Yeni sürüm ${g.uzak} var: eklenti klasöründeki guncelle.bat'a çift tıkla.` + (g.notlar ? " (" + g.notlar + ")" : ""); d.style.color = "var(--warning,#e0a030)"; }
+        else if (g.hata) d.textContent = "Güncelleme bakılamadı: " + g.hata;
+        else if (g.bakildi) d.textContent = "Güncel (" + new Date(g.bakildi).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + " bakıldı).";
+    };
+    chrome.storage.local.get("guncelleme", (r) => gunCiz(r.guncelleme));
+    chrome.storage.onChanged.addListener((d, alan) => { if (alan === "local" && d.guncelleme) gunCiz(d.guncelleme.newValue); });
+    gun.querySelector("[data-g]").addEventListener("click", () => {
+        gun.querySelector("[data-d]").textContent = "Bakılıyor...";
+        chrome.runtime.sendMessage({ guncellemeBak: true }, (g) => { void chrome.runtime.lastError; gunCiz(g); });
+    });
+    const YEREL_AYAR = ["ayar", "planAyar", "yanPanel", "kararDeney", "kararGuvenli"];
+    const aktarNot = (m) => { aktar.querySelector("[data-not]").textContent = m; };
+    aktar.querySelector('[data-a="disa"]').addEventListener("click", async () => {
+        const sync = await chrome.storage.sync.get(null);
+        const local = await chrome.storage.local.get(YEREL_AYAR);
+        delete sync.oldValues; delete sync.pinnedTimers;
+        if (sync.autoSendMerc) { sync.autoSendMerc = { ...sync.autoSendMerc }; for (const k of ["mercenaryId", "mercenaryName", "dokunma", "disabledReason"]) delete sync.autoSendMerc[k]; sync.autoSendMerc.usolKalan = 0; }
+        const veri = { tur: "cor3-ayarlar", surum: chrome.runtime.getManifest().version, tarih: new Date().toISOString(), sync, local };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(veri, null, 1)], { type: "application/json" }));
+        const l = document.createElement("a");
+        l.href = url; l.download = "cor3-ayarlar-" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.append(l); l.click(); l.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        aktarNot("Dışa aktarıldı (" + Object.keys(sync).length + " Helper + " + Object.keys(local).length + " TD/planlayıcı ayarı).");
+    });
+    const dosya = aktar.querySelector('input[type="file"]');
+    aktar.querySelector('[data-a="ice"]').addEventListener("click", () => dosya.click());
+    dosya.addEventListener("change", async () => {
+        const f = dosya.files && dosya.files[0];
+        dosya.value = "";
+        if (!f) return;
+        try {
+            const v = JSON.parse(await f.text());
+            if (!v || typeof v !== "object" || !v.sync || !v.local) throw new Error("dosya cor3 ayar dosyası değil");
+            const simdi = await chrome.storage.sync.get("autoSendMerc");
+            const sync = { ...v.sync };
+            delete sync.oldValues; delete sync.pinnedTimers;
+            if (sync.autoSendMerc) {
+                const eski = simdi.autoSendMerc || {};
+                sync.autoSendMerc = { ...sync.autoSendMerc, mercenaryId: eski.mercenaryId || null, mercenaryName: eski.mercenaryName || "", dokunma: eski.dokunma || [], disabledReason: null };
+            }
+            const local = {};
+            for (const k of YEREL_AYAR) if (v.local[k] !== undefined) local[k] = v.local[k];
+            await chrome.storage.sync.set(sync);
+            await chrome.storage.local.set({ ...local, ayarYazan: { kim: "ayar içe aktarma", t: Date.now() } });
+            aktarNot("İçe aktarıldı (" + Object.keys(sync).length + " + " + Object.keys(local).length + " ayar). Oyun sekmesini yenile.");
+            setTimeout(oku, 300);
+        } catch (e) {
+            aktarNot("İçe aktarılamadı: " + (e && e.message ? e.message : e));
+        }
+    });
     const anlik = document.createElement("div");
     anlik.id = "cor3Anlik";
     anlik.style.cssText = "padding:6px 10px;margin-bottom:4px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border);font-size:10.5px;color:var(--text-secondary);line-height:1.5";
@@ -104,6 +198,39 @@
     rapor.id = "cor3Rapor";
     rapor.style.cssText = "padding:6px 10px;margin-bottom:4px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border);font-size:10px;color:var(--text-secondary);line-height:1.45";
     ozet.after(rapor);
+    const gorev = document.createElement("details");
+    gorev.id = "cor3Gorev";
+    gorev.style.cssText = rapor.style.cssText;
+    rapor.after(gorev);
+    const gorevCiz = () => chrome.storage.local.get("gorevEsya", (r) => {
+        const l = (r.gorevEsya && r.gorevEsya.maddeler) || [];
+        const acik = gorev.open;
+        const tam = l.filter((m) => m.tam);
+        const kisa = (x) => x.replace(/ \(CCS Field Surgeon Kit Mk2\)| with backpack connector slot| Powered adjustable wrench/g, "");
+        gorev.innerHTML = `<summary style="cursor:pointer;color:var(--accent-light-cyan);font-size:12px;font-weight:600">Görev eşyaları: ${tam.length}/${l.length} madde hazır (${Math.round(tam.reduce((t, m) => t + m.cr, 0)).toLocaleString("tr-TR")} CR)</summary>`
+            + l.map((m) => `<div style="color:${m.tam ? "var(--success,#4caf50)" : "var(--text)"}">A${m.a} · ${m.cr.toLocaleString("tr-TR")} CR${m.tam ? " · HAZIR" : ""}</div>`
+                + `<div style="padding-left:10px;color:var(--text-dim)">${m.e.map((x) => `<span style="color:${x[1] >= x[2] ? "var(--success,#4caf50)" : x[1] ? "var(--text)" : "inherit"}">${kac(kisa(x[0]))} ${x[1]}/${x[2]}</span>`).join(", ")}</div>`).join("");
+        gorev.open = acik;
+    });
+    const asker = document.createElement("details");
+    asker.id = "cor3Asker";
+    asker.style.cssText = rapor.style.cssText;
+    gorev.after(asker);
+    const askerCiz = () => chrome.storage.local.get("mercGecmis", (r) => chrome.storage.sync.get("autoSendMerc", (sy) => {
+        const dok = new Set(((sy.autoSendMerc || {}).dokunma) || []);
+        const g = r.mercGecmis || { son: {}, olay: [] };
+        const acik = asker.open;
+        const l = Object.entries(g.son).map(([id, x]) => ({ ...x, id })).filter((x) => Date.now() - (x.t || 0) < 6 * 3600000).sort((a, b) => a.ucret - b.ucret);
+        const olay = (g.olay || []).filter((o) => o.tip || o.once[0] !== o.sonra[0] || o.once[2] !== o.sonra[2]).slice(-10).reverse();
+        const zm = (t) => new Date(t).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+        const olaySatir = (o) => o.tip === "geldi" ? `${zm(o.t)} YENİ: ${kac(o.ad)} (${o.market.toUpperCase()}, ${kac(o.sonra[0])}, ${o.sonra[2].toLocaleString("tr-TR")} CR)`
+            : o.tip === "gitti" ? `${zm(o.t)} AYRILDI: ${kac(o.ad)} (${o.market.toUpperCase()}, ${o.once[1]} görev, ${o.once[2].toLocaleString("tr-TR")} CR)`
+            : `${zm(o.t)} ${kac(o.ad)}: ${kac(o.once[0])} ${o.once[1]} görev ${o.once[2].toLocaleString("tr-TR")} → ${kac(o.sonra[0])} ${o.sonra[1]} görev ${o.sonra[2].toLocaleString("tr-TR")} CR`;
+        asker.innerHTML = `<summary style="cursor:pointer;color:var(--accent-light-cyan);font-size:12px;font-weight:600">Askerler: ${l.length} (ücret/rütbe takibi)</summary>`
+            + l.map((x) => `<div style="color:var(--text)">${kac(x.ad)}${x.elit ? " (ELİT, gönderilmez)" : ""}${dok.has(x.id) ? " (DOKUNMA, gönderilmez)" : ""} · ${x.market.toUpperCase()} · ${kac(x.rutbe)} · ${x.gorev} görev · ${x.ucret.toLocaleString("tr-TR")} CR</div>`).join("")
+            + (olay.length ? `<div style="margin-top:4px;color:var(--text-dim)">Gelen/ayrılan askerler, ücret/rütbe değişimleri:</div>` + olay.map((o) => `<div style="padding-left:10px;color:var(--text-dim)">${olaySatir(o)}</div>`).join("") : `<div style="color:var(--text-dim)">Henüz değişim görülmedi.</div>`);
+        asker.open = acik;
+    }));
     const raporCiz = () => chrome.storage.local.get("gunlukRapor", (r) => {
         const g = r.gunlukRapor;
         const acik = rapor.open;
@@ -168,11 +295,11 @@
         const top = { job: 0, jobCr: 0, kacan: 0, satisCr: 0, td: 0 };
         top.liste = [];
         top.deneme = 0;
-        for (const k of gunler) { const o = g[k]; top.deneme += o.deneme || 0; top.liste.push(...(o.liste || []).map((x) => typeof x === "string" ? x : { ...x, gun: `${k.slice(8)}.${k.slice(5, 7)}` })); top.job += o.job; top.jobCr += o.jobCr; top.kacan += o.kacan; top.satisCr += o.satisCr; top.td += o.td || 0; }
+        for (const k of gunler) { const o = g[k]; top.deneme += o.deneme || 0; top.liste.push(...(o.liste || []).map((x) => typeof x === "string" ? x : { ...x, gun: `${k.slice(8)}.${k.slice(5, 7)}` })); top.job += o.job; top.jobTahmini = (top.jobTahmini || 0) + (o.jobTahmini || 0); top.jobCr += o.jobCr; top.kacan += o.kacan; top.satisCr += o.satisCr; top.td += o.td || 0; }
         const hucre = "padding:2px 4px;text-align:right;font-variant-numeric:tabular-nums";
         popVeri = {};
         popOzet = {};
-        const satir = (ad, o, kalin) => (popVeri[ad] = o.liste || [], popOzet[ad] = { kacan: o.kacan, deneme: o.deneme }, 0) || `<tr style="${kalin ? "color:var(--text);font-weight:700;border-top:1px solid var(--border)" : ""}"><td style="padding:2px 4px">${ad}</td><td style="${hucre}" title="yapılan job, net CR (depozito düşülmüş)">${o.job} · ${sayi(o.jobCr)}</td><td style="${hucre};color:${o.kacan ? "var(--accent-orange)" : "inherit"};${(o.liste || []).length ? "cursor:help;text-decoration:underline dotted" : ""}" data-kacan="${kac(ad)}">${o.kacan}</td><td style="${hucre}">${sayi(o.satisCr)}</td><td style="${hucre};color:${(o.td || 0) >= 0 ? "var(--accent-green)" : "var(--accent-red)"}">${(o.td || 0) >= 0 ? "+" : ""}${sayi(o.td || 0)}</td></tr>`;
+        const satir = (ad, o, kalin) => (popVeri[ad] = o.liste || [], popOzet[ad] = { kacan: o.kacan, deneme: o.deneme }, 0) || `<tr style="${kalin ? "color:var(--text);font-weight:700;border-top:1px solid var(--border)" : ""}"><td style="padding:2px 4px">${ad}</td><td style="${hucre}" title="yapılan job, net CR (depozito düşülmüş)${o.jobTahmini ? "; " + o.jobTahmini + " jobun CR'ı günün ortalamasından tahmin (kayıt eksik)" : ""}">${o.job} · ${o.jobTahmini ? "~" : ""}${sayi(o.jobCr)}</td><td style="${hucre};color:${o.kacan ? "var(--accent-orange)" : "inherit"};${(o.liste || []).length ? "cursor:help;text-decoration:underline dotted" : ""}" data-kacan="${kac(ad)}">${o.kacan}</td><td style="${hucre}">${sayi(o.satisCr)}</td><td style="${hucre};color:${(o.td || 0) >= 0 ? "var(--accent-green)" : "var(--accent-red)"}">${(o.td || 0) >= 0 ? "+" : ""}${sayi(o.td || 0)}</td></tr>`;
         ozet.innerHTML = `<div style="display:flex;justify-content:space-between;color:var(--accent-light-cyan);font-size:12px;font-weight:600;margin-bottom:4px"><span>Özet (son 3 gün)</span><span style="font-size:10px;color:var(--text-dim);font-weight:400">${r.ozet3 ? new Date(r.ozet3.zaman).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) : "hesaplanıyor"}</span></div>`
             + `<table style="width:100%;border-collapse:collapse"><tr style="color:var(--text-dim)"><th style="text-align:left;padding:2px 4px;font-weight:400">Gün</th><th style="${hucre};font-weight:400" title="Helper'ın yaptığı joblar ve net kazanç">Job · CR</th><th style="${hucre};font-weight:400" title="Helper'ın denediği ama yapamadığı ya da atladığı joblar">Kaçan</th><th style="${hucre};font-weight:400" title="Değerli dosya satışı (arama/indirme)">Satış CR</th><th style="${hucre};font-weight:400" title="TD koşuları: ödül - giriş ücreti">TD net</th></tr>`
             + gunler.map((k) => satir(new Date(k + "T12:00").toLocaleDateString("tr-TR", { day: "2-digit", month: "short" }), g[k])).join("") + satir("Toplam", top, true) + `</table>`
@@ -201,32 +328,49 @@
     document.addEventListener("click", () => { if (sabit) { sabit = false; pop.style.display = "none"; } });
     ozetCiz();
     raporCiz();
+    gorevCiz();
+    askerCiz();
     anlikCiz();
 
-    const oku = () => chrome.storage.local.get(["ayar", "planAyar"], (r) => {
+    const oku = () => chrome.storage.local.get(["ayar", "planAyar", "kararDeney", "kararGuvenli"], (r) => chrome.storage.sync.get("autoSendMerc", (sy) => {
+        const dom = {};
+        for (const id of ["autoSendMercenaryToggle", "autoChooseMercToggle", "autoChooseCheckbox", "autoFinishAllJobsToggle"]) { const e = document.getElementById(id); dom[id] = !!(e && e.checked); }
+        const d = { td: r.ayar || {}, plan: r.planAyar || {}, m: sy.autoSendMerc || {}, dom, guvenli: !!r.kararGuvenli };
         for (const { a, g } of satirlar) {
+            const neden = a.kos ? a.kos(d) : "";
+            const s = g.closest("label");
+            s.style.opacity = neden ? "0.45" : "";
+            s.title = (neden ? "Etkisiz: " + neden + "\n\n" : "") + a.ipucu;
+            if (a.tip !== "dom") g.disabled = !!neden;
+            if (a.tip === "merc") { g.checked = !!(sy.autoSendMerc && sy.autoSendMerc[a.k]); continue; }
+            if (a.tip === "yerel") { g.checked = !!r[a.k]; continue; }
+            if (a.tip === "sayi") { if (document.activeElement !== g) g.value = (sy.autoSendMerc && sy.autoSendMerc[a.k]) ?? a.vs; continue; }
             if (a.tip === "td") g.checked = !!(r.ayar && r.ayar[a.k]);
             else if (a.tip === "plan") g.checked = !!(r.planAyar && r.planAyar[a.k]);
             else { const e = document.getElementById(a.id); g.checked = !!(e && e.checked); g.disabled = !e; }
         }
-    });
+    }));
     for (const { a, g } of satirlar) {
         g.addEventListener("change", () => {
             const v = g.checked;
-            if (a.tip === "td") chrome.storage.local.get("ayar", (r) => chrome.storage.local.set({ ayar: { ...(r.ayar || {}), [a.k]: v } }));
-            else if (a.tip === "plan") chrome.storage.local.get("planAyar", (r) => chrome.storage.local.set({ planAyar: { ...(r.planAyar || {}), [a.k]: v } }));
+            if (a.tip === "sayi") { let n = Math.max(0, Math.min(a.max, parseInt(g.value, 10) || 0)); if (a.alt && n > 0 && n < a.alt) { if (document.activeElement === g) return; n = a.alt; g.value = n; } chrome.storage.sync.get("autoSendMerc", (sy) => chrome.storage.sync.set({ autoSendMerc: { ...(sy.autoSendMerc || {}), [a.k]: n } })); return; }
+            if (a.tip === "yerel") { chrome.storage.local.set({ [a.k]: v }); return; }
+            if (a.tip === "merc") { chrome.storage.sync.get("autoSendMerc", (sy) => chrome.storage.sync.set({ autoSendMerc: { ...(sy.autoSendMerc || {}), [a.k]: v } })); return; }
+            if (a.tip === "td") chrome.storage.local.get("ayar", (r) => chrome.storage.local.set({ ayar: { ...(r.ayar || {}), [a.k]: v, ...(a.k === "acik" && !v ? { sonrakindeDur: false } : {}) }, ayarYazan: { kim: "Helper üst anahtar", t: Date.now() } }));
+            else if (a.tip === "plan") chrome.storage.local.get("planAyar", (r) => chrome.storage.local.set({ planAyar: { ...(r.planAyar || {}), [a.k]: v }, ayarYazan: { kim: "Helper üst anahtar", t: Date.now() } }));
             else {
                 const e = document.getElementById(a.id);
                 if (e && e.checked !== v) e.click();
                 setTimeout(oku, 300);
             }
         });
+        if (a.tip === "sayi") { g.addEventListener("input", () => g.dispatchEvent(new Event("change"))); g.addEventListener("blur", () => g.dispatchEvent(new Event("change"))); }
         if (a.tip === "dom") {
             const e = document.getElementById(a.id);
             if (e) e.addEventListener("change", oku);
         }
     }
-    chrome.storage.onChanged.addListener((d) => { if (d.ayar || d.planAyar || d.autoFinishAllJobsEnabled || d.autoSendMerc) oku(); if (d.ozet3 || d.kosular) ozetCiz(); if (d.gunlukRapor) raporCiz(); if (d.durum || d.automationQueueStatus || d.planDurum || d.ayar || d.planAyar || d.autoJobsDebugLogs || d.valuableDebugLogs) anlikCiz(); });
+    chrome.storage.onChanged.addListener((d) => { if (d.ayar || d.planAyar || d.autoFinishAllJobsEnabled || d.autoSendMerc) oku(); if (d.ozet3 || d.kosular) ozetCiz(); if (d.gunlukRapor) raporCiz(); if (d.gorevEsya) gorevCiz(); if (d.mercGecmis || d.autoSendMerc) askerCiz(); if (d.kararDeney || d.kararGuvenli) oku(); if (d.autoSendMerc || d.decisionModifiers) oku(); if (d.durum || d.automationQueueStatus || d.planDurum || d.ayar || d.planAyar || d.autoJobsDebugLogs || d.valuableDebugLogs) anlikCiz(); });
     oku();
     setTimeout(oku, 1500);
 })();
