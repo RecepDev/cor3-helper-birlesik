@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.0",
-  "notlar": "GitHub bağlantısı, güncelleme denetimi ve guncelle.bat; asker gönderme takılmasına bekçi (1.8.1)"
+  "surum": "1.9.1",
+  "notlar": "Güncelleme ara düğmesi yeni sürümü indirip kurar (cor3-guncelle.bat); GitHub bağlantıları kaldırıldı"
 }

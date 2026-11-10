@@ -92,10 +92,9 @@
     aktar.style.cssText = "grid-column:1/-1;display:flex;gap:6px;align-items:center;margin-top:4px;padding-top:4px;border-top:1px solid var(--border);font-size:10px;color:var(--text-secondary)";
     aktar.innerHTML = `<button type="button" data-a="disa" style="font-size:10px;padding:2px 8px;cursor:pointer">Ayarları dışa aktar</button><button type="button" data-a="ice" style="font-size:10px;padding:2px 8px;cursor:pointer">İçe aktar</button><input type="file" accept=".json,application/json" style="display:none"><span data-not style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>`;
     kutu.append(aktar);
-    const GH = "https://github.com/RecepDev/cor3-helper-birlesik";
     const gun = document.createElement("div");
     gun.style.cssText = "grid-column:1/-1;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--text-secondary)";
-    gun.innerHTML = `<span data-s></span><a href="${GH}" target="_blank" rel="noopener" style="color:var(--accent,inherit)">GitHub</a><a href="${GH}/releases" target="_blank" rel="noopener" style="color:var(--accent,inherit)">Sürüm notları</a><button type="button" data-g style="font-size:10px;padding:2px 8px;cursor:pointer">Güncelleme ara</button><span data-d style="flex-basis:100%"></span>`;
+    gun.innerHTML = `<span data-s></span><button type="button" data-g style="font-size:10px;padding:2px 8px;cursor:pointer">Güncelleme ara</button><span data-d style="flex-basis:100%"></span>`;
     kutu.append(gun);
     const gunCiz = (g) => {
         const v = chrome.runtime.getManifest().version;
@@ -104,7 +103,7 @@
         d.style.color = "";
         if (!g) { d.textContent = ""; return; }
         if (g.disk && g.disk !== v) d.textContent = `${g.disk} indirildi, maç arasında kendini yeniden yükleyecek.`;
-        else if (g.var) { d.textContent = `Yeni sürüm ${g.uzak} var: eklenti klasöründeki guncelle.bat'a çift tıkla.` + (g.notlar ? " (" + g.notlar + ")" : ""); d.style.color = "var(--warning,#e0a030)"; }
+        else if (g.var) { d.textContent = `Yeni sürüm ${g.uzak} var: Güncelleme ara düğmesine bas, indirip kurar.` + (g.notlar ? " (" + g.notlar + ")" : ""); d.style.color = "var(--warning,#e0a030)"; }
         else if (g.hata) d.textContent = "Güncelleme bakılamadı: " + g.hata;
         else if (g.bakildi) d.textContent = "Güncel (" + new Date(g.bakildi).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + " bakıldı).";
     };
@@ -112,8 +111,30 @@
     chrome.storage.onChanged.addListener((d, alan) => { if (alan === "local" && d.guncelleme) gunCiz(d.guncelleme.newValue); });
     gun.querySelector("[data-g]").addEventListener("click", () => {
         gun.querySelector("[data-d]").textContent = "Bakılıyor...";
-        chrome.runtime.sendMessage({ guncellemeBak: true }, (g) => { void chrome.runtime.lastError; gunCiz(g); });
+        chrome.runtime.sendMessage({ guncellemeBak: true }, (g) => { void chrome.runtime.lastError; gunCiz(g); if (g && g.var && !(g.disk && g.disk !== chrome.runtime.getManifest().version)) gunIndir(g); });
     });
+    const gunIndir = async (g) => {
+        const d = gun.querySelector("[data-d]");
+        try {
+            const ps = await (await fetch(chrome.runtime.getURL("guncelle.ps1"))).text();
+            const bat = "@echo off\r\ntitle cor3 guncelle\r\npowershell -NoProfile -ExecutionPolicy Bypass -Command \"$s=[IO.File]::ReadAllText('%~f0');$i=$s.IndexOf('#PS'+'BASLA');iex ('& {'+$s.Substring($i)+'} -ID " + chrome.runtime.id + "')\"\r\nexit /b\r\n#PSBASLA\r\n" + ps.replace(/\r?\n/g, "\r\n");
+            const url = "data:application/octet-stream;base64," + btoa(unescape(encodeURIComponent(bat)));
+            chrome.downloads.download({ url, filename: "cor3-guncelle.bat", conflictAction: "overwrite", saveAs: true }, (id) => {
+                if (chrome.runtime.lastError || !id) { d.textContent = "İndirilemedi: " + (chrome.runtime.lastError ? chrome.runtime.lastError.message : "iptal"); return; }
+                d.textContent = `${g.uzak} için cor3-guncelle.bat indiriliyor...`;
+                const izle = (c) => {
+                    if (c.id !== id || !c.state) return;
+                    chrome.downloads.onChanged.removeListener(izle);
+                    if (c.state.current !== "complete") { d.textContent = "İndirme yarıda kaldı."; return; }
+                    d.textContent = "cor3-guncelle.bat indirildi ve açılıyor. Pencere bitince eklenti maç arasında kendini yeniden yükler.";
+                    try { chrome.downloads.open(id); } catch (e) { d.textContent = "cor3-guncelle.bat indirildi, çift tıklayıp çalıştır."; }
+                };
+                chrome.downloads.onChanged.addListener(izle);
+            });
+        } catch (e) {
+            d.textContent = "İndirilemedi: " + (e && e.message ? e.message : e);
+        }
+    };
     const YEREL_AYAR = ["ayar", "planAyar", "yanPanel", "kararDeney", "kararGuvenli"];
     const aktarNot = (m) => { aktar.querySelector("[data-not]").textContent = m; };
     aktar.querySelector('[data-a="disa"]').addEventListener("click", async () => {

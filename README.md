@@ -4,7 +4,7 @@ Bu depo, [Femtoce11/cor3-helper](https://github.com/Femtoce11/cor3-helper) eklen
 
 **Kurulum:** [Son sürümün](https://github.com/RecepDev/cor3-helper-birlesik/releases/latest) zip dosyasını indir, bir klasöre çıkar. Tarayıcıda `chrome://extensions` (Opera: `opera://extensions`) sayfasında geliştirici modunu aç, "Paketlenmemiş öğe yükle" ile klasörü seç.
 
-**Güncelleme:** Eklenti 6 saatte bir yeni sürüm olup olmadığına bakar ve Helper penceresinde gösterir. Yeni sürüm varsa eklenti klasöründeki `guncelle.bat` dosyasına çift tıkla. Dosyalar yenilenir, eklenti maç arasında kendini yeniden yükler. Ayarların korunur.
+**Güncelleme:** Eklenti 6 saatte bir yeni sürüm olup olmadığına bakar ve Helper penceresinde gösterir. Helper penceresinde "Güncelleme ara" düğmesine basınca yeni sürüm varsa `cor3-guncelle.bat` indirilip çalıştırılır (kaydetme penceresinde Masaüstü seçilebilir; sonraki güncellemelerde o dosyaya çift tıklamak da yeter). Dosyalar yenilenir, eklenti maç arasında kendini yeniden yükler. Ayarların korunur.
 
 **Derleme:** `npm install`, sonra `npm run build`. Çıktı `dist/` klasörüne yazılır. TD botu `../cor3-td-bot/eklenti` klasöründen alınır, yoksa `td-kaynak/` kullanılır.
 

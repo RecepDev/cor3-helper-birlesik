@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "COR3 Helper + TD Bot",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "_version_note": "Kept for backward-compat: older extension versions fetch this file for update checks. Will be removed in a future release. Canonical version is in package.json.",
   "description": "Monitor markets, expeditions, daily ops, and get timer alerts for cor3.gg.",
   "permissions": [
@@ -11,7 +11,9 @@
     "tabs",
     "sidePanel",
     "alarms",
-    "notifications"
+    "notifications",
+    "downloads",
+    "downloads.open"
   ],
   "side_panel": {
     "default_path": "popup.html"
