@@ -68,20 +68,7 @@ const surumBuyuk = (a, b) => {
     return false;
 };
 async function diskYukle() {
-    const sekmeler = await chrome.tabs.query({ url: 'https://cor3.gg/*' });
-    if (sekmeler.length) {
-        await chrome.storage.local.set({ planMesgul: true });
-        const [r, s] = await Promise.all([chrome.storage.local.get(['durum', 'automationQueueStatus', 'planDurum']), chrome.storage.sync.get('autoDailyHackEnabled')]);
-        const d = r.durum || {}, q = r.automationQueueStatus || {};
-        const { guncelleBekle } = await chrome.storage.local.get('guncelleBekle');
-        const bas = guncelleBekle || Date.now();
-        if (!guncelleBekle) await chrome.storage.local.set({ guncelleBekle: bas });
-        const taze = Date.now() - (d.zaman || 0) < 15000;
-        const ok = !q.active && !(q.queued || []).length && (taze ? !d.macta && ((r.planDurum || {}).calisma || {}).adim === 'bos' && !s.autoDailyHackEnabled : Date.now() - bas > 20 * 60000);
-        if (!ok) return;
-    }
     await chrome.storage.local.set({ guncellemeYenile: Date.now() });
-    await chrome.storage.local.remove('guncelleBekle');
     chrome.runtime.reload();
 }
 async function guncellemeBak(uzaktan) {
@@ -112,9 +99,10 @@ chrome.storage.local.get('guncellemeYenile', async (r) => {
     await chrome.storage.local.set({ planMesgul: false, ayar: Object.assign({}, ayar, { otomatik: true }), ayarYazan: { kim: 'otomatik güncelleme', t: Date.now() } });
     setTimeout(async () => { for (const t of await chrome.tabs.query({ url: 'https://cor3.gg/*' })) chrome.tabs.reload(t.id); }, 2000);
 });
-chrome.alarms.get('cor3-guncelle', (a) => { if (!a) chrome.alarms.create('cor3-guncelle', { periodInMinutes: 1 }); });
+chrome.alarms.get('cor3-guncelle', (a) => { if (!a || a.periodInMinutes !== 0.5) chrome.alarms.create('cor3-guncelle', { periodInMinutes: 0.5 }); });
 chrome.alarms.onAlarm.addListener((a) => { if (a.name === 'cor3-guncelle') guncellemeBak(false).catch(() => {}); });
 chrome.runtime.onMessage.addListener((m, sender, cevap) => {
+    if (m && m.diskBak) { guncellemeBak(false).then((g) => cevap(g)).catch(() => cevap(null)); return true; }
     if (!m || !m.guncellemeBak) return;
     guncellemeBak(true).then((g) => cevap(g)).catch((e) => cevap({ hata: String(e) }));
     return true;

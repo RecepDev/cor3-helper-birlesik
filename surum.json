@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.3",
-  "notlar": "Güncelleme: TD durumu gelmiyorsa 20 dk sonra yine yeniden yüklenir"
+  "surum": "1.9.4",
+  "notlar": "Güncelleme inince beklemeden hemen yeniden yüklenir"
 }

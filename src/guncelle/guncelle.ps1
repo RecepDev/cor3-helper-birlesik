@@ -29,13 +29,14 @@ try {
     if (-not (Test-Path "$kaynak\manifest.json")) { throw 'zip icinde manifest.json yok' }
     $yeni = (Get-Content "$kaynak\manifest.json" -Raw | ConvertFrom-Json).version
     $eski = (Get-Content "$Klasor\manifest.json" -Raw | ConvertFrom-Json).version
-    robocopy $kaynak $Klasor /E /NFL /NDL /NJH /NJS /NP | Out-Null
+    robocopy $kaynak $Klasor /E /XF manifest.json /NFL /NDL /NJH /NJS /NP | Out-Null
     if ($LASTEXITCODE -ge 8) { throw "dosyalar kopyalanamadi (robocopy $LASTEXITCODE)" }
+    Copy-Item "$kaynak\manifest.json" "$Klasor\manifest.json" -Force
     Write-Host "Guncellendi: $eski -> $yeni" -ForegroundColor Green
-    Write-Host 'Eklenti mac arasinda kendini yeniden yukler, bir sey yapmana gerek yok.'
+    Write-Host 'Eklenti birkac saniye icinde kendini yeniden yukler.'
 } catch {
     Write-Host ('HATA: ' + $_.Exception.Message) -ForegroundColor Red
 } finally {
     Remove-Item $gecici -Recurse -Force -ErrorAction SilentlyContinue
 }
-Start-Sleep 8
+Start-Sleep 4

@@ -126,8 +126,10 @@
                     if (c.id !== id || !c.state) return;
                     chrome.downloads.onChanged.removeListener(izle);
                     if (c.state.current !== "complete") { d.textContent = "İndirme yarıda kaldı."; return; }
-                    d.textContent = "cor3-guncelle.bat indirildi ve açılıyor. Pencere bitince eklenti maç arasında kendini yeniden yükler.";
+                    d.textContent = "cor3-guncelle.bat indirildi ve açılıyor. Pencere bitince eklenti hemen yeniden yüklenir.";
                     try { chrome.downloads.open(id); } catch (e) { d.textContent = "cor3-guncelle.bat indirildi, çift tıklayıp çalıştır."; }
+                    const bas = Date.now();
+                    const tik = setInterval(() => { if (Date.now() - bas > 10 * 60000) return clearInterval(tik); chrome.runtime.sendMessage({ diskBak: true }, () => void chrome.runtime.lastError); }, 3000);
                 };
                 chrome.downloads.onChanged.addListener(izle);
             });
