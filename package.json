@@ -1,6 +1,6 @@
 {
   "name": "cor3-helper",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "private": true,
   "description": "COR3 Helper Chrome Extension",
   "scripts": {

@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.2",
-  "notlar": "Düzeltme: toplanmış sefer listede kalınca yeni sefer gönderilmiyordu"
+  "surum": "1.9.3",
+  "notlar": "Güncelleme: TD durumu gelmiyorsa 20 dk sonra yine yeniden yüklenir"
 }

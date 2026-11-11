@@ -73,10 +73,15 @@ async function diskYukle() {
         await chrome.storage.local.set({ planMesgul: true });
         const [r, s] = await Promise.all([chrome.storage.local.get(['durum', 'automationQueueStatus', 'planDurum']), chrome.storage.sync.get('autoDailyHackEnabled')]);
         const d = r.durum || {}, q = r.automationQueueStatus || {};
-        const ok = !d.macta && !q.active && !(q.queued || []).length && ((r.planDurum || {}).calisma || {}).adim === 'bos' && !s.autoDailyHackEnabled && Date.now() - (d.zaman || 0) < 15000;
+        const { guncelleBekle } = await chrome.storage.local.get('guncelleBekle');
+        const bas = guncelleBekle || Date.now();
+        if (!guncelleBekle) await chrome.storage.local.set({ guncelleBekle: bas });
+        const taze = Date.now() - (d.zaman || 0) < 15000;
+        const ok = !q.active && !(q.queued || []).length && (taze ? !d.macta && ((r.planDurum || {}).calisma || {}).adim === 'bos' && !s.autoDailyHackEnabled : Date.now() - bas > 20 * 60000);
         if (!ok) return;
     }
     await chrome.storage.local.set({ guncellemeYenile: Date.now() });
+    await chrome.storage.local.remove('guncelleBekle');
     chrome.runtime.reload();
 }
 async function guncellemeBak(uzaktan) {
