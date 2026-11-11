@@ -306,7 +306,7 @@ export function checkAutoSendOnExpeditionData(expeditions) {
         if (!settings.autoSendMerc || !settings.autoSendMerc.enabled) return;
         if (!settings.autoSendMerc.mercenaryId && !settings.autoSendMerc.autoChooseMerc) return;
 
-        const hasActiveExpeditions = expeditions.length > 0;
+        const hasActiveExpeditions = expeditions.some(e => !e.completedAt && e.status !== 'FAILED');
         if (!hasActiveExpeditions) {
             const sinirsiz = !!settings.autoSendMerc.sinirsiz;
             const sinir = sinirsiz ? 0 : (settings.autoSendMerc.gunluk ?? 2);
