@@ -85,8 +85,13 @@ const ganimetDenenen = new Set();
 let ganimetSon = 0;
 let ganimetSuruyor = false;
 
+let ganimetTekrar = null;
 function ganimetSat() {
-    if (ganimetSuruyor || Date.now() - ganimetSon < 60000) return;
+    if (ganimetSuruyor || Date.now() - ganimetSon < 60000) {
+        clearTimeout(ganimetTekrar);
+        ganimetTekrar = setTimeout(ganimetSat, Math.max(5000, 61000 - (Date.now() - ganimetSon)));
+        return;
+    }
     chrome.storage.sync.get('autoSendMerc', (ay) => {
         const m = ay.autoSendMerc || {};
         if (!m.ganimetSat) return;

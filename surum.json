@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.5",
-  "notlar": "Düzeltme: ganimet açılışta toplanınca yeni asker gönderilmiyordu"
+  "surum": "1.9.6",
+  "notlar": "Düzeltme: aynı dakika içinde gelen ganimet satılmadan kalıyordu"
 }
