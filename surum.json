@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.4",
-  "notlar": "Güncelleme inince beklemeden hemen yeniden yüklenir"
+  "surum": "1.9.5",
+  "notlar": "Düzeltme: ganimet açılışta toplanınca yeni asker gönderilmiyordu"
 }

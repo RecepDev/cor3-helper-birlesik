@@ -440,6 +440,7 @@ export function setupWsRelay() {
                 if (bos >= 4 && olay.error !== 'Insufficient stash capacity' && olay.error !== 'stash.error.insufficient_capacity') {
                     console.log('[COR3 Helper] Auto-send: collect.all error "' + olay.error + '" ignored (stash has ' + bos + ' free) — likely duplicate collect');
                     setAutoSendCollectRetries(0);
+                    if (autoSendInProgress && autoSendExpeditionId) window.postMessage({ type: 'COR3_WS_COLLECTED_ALL', data: { id: autoSendExpeditionId } }, '*');
                     return;
                 }
                 window.postMessage({ ...olay, _kontrolEdildi: true }, '*');
