@@ -5,6 +5,7 @@ import {
     USOL_MARKET_ID
 } from './state.js';
 import { queueRetryOp, humanDelay } from './ws-send.js';
+import { mailMesaj } from './mail-al.js';
 
 // Forward declaration — set by index.js after market-requests is loaded
 let __cor3PostUnreachable = null;
@@ -31,6 +32,8 @@ export function handleWsMessage(rawData, socket) {
 
     const eventName = parsed[0];
     const payload = parsed[1];
+
+    if (eventName === 'mail') { try { mailMesaj(payload); } catch (e) {} }
 
     // Handle token-expired error — close sockets to force game to reconnect with fresh token
     if (eventName === 'error' && payload && payload.message === 'token-expired') {

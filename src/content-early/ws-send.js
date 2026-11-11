@@ -210,6 +210,10 @@ function joinRoomsInOrder(rooms) {
 // Enter rooms properly: leave any already-joined rooms (child→parent),
 // then join them all fresh (parent→child).
 // `rooms` must be in parent→child order, e.g. ['network-map', 'market']
+export function joinRoomNow(room) {
+    sendJoin(room);
+}
+
 export function enterRooms(rooms) {
     // Build leave list: reverse order (child first), only rooms we're in
     var toLeave = rooms.slice().reverse().filter(function (r) { return joinedRooms.has(r); });

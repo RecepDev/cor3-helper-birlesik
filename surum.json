@@ -1,4 +1,4 @@
 {
-  "surum": "1.9.6",
-  "notlar": "Düzeltme: aynı dakika içinde gelen ganimet satılmadan kalıyordu"
+  "surum": "1.10.0",
+  "notlar": "Yeni: 'Yalnız ucuz asker (< 2.500)' anahtarı (2.500 CR ve üstü asker hiç gönderilmez). Yeni: 'Stash: Receive all' anahtarı (mailbox'taki eşyaları otomatik alır). İkisi de kapalı gelir."
 }

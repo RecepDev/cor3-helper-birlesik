@@ -274,6 +274,9 @@ export function setupWsRelay() {
                         usolElite2.forEach(es => { if (es.mercenary) eliteIds.add(es.mercenary.id); });
                         allMercs.forEach(m => { if (!m._isElite) m._isElite = eliteIds.has(m.id); });
 
+                        if (settings.autoSendMerc.yalnizUcuz) {
+                            for (let i = allMercs.length - 1; i >= 0; i--) { const c = configs[allMercs[i].id]; if (!c || (c.totalCost || 0) >= 2500) allMercs.splice(i, 1); }
+                        }
                         const ucuzSinir = settings.autoSendMerc.applyMercCostLimiter ? (settings.autoSendMerc.maxMercCost || 3000) : 3000;
                         const ucuzVar = allMercs.some(m => m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= ucuzSinir);
                         const usolKalan = ucuzVar ? 0 : (settings.autoSendMerc.usolKalan || 0);
