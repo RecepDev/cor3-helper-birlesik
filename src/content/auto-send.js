@@ -374,6 +374,7 @@ export function checkAutoSendOnExpeditionData(expeditions) {
                 }, 60000);
                 return;
             }
+            if (window.__cor3AutoSendBosBekle && Date.now() < window.__cor3AutoSendBosBekle) return;
             console.log('[COR3 Helper] Auto-send: No active expeditions, refreshing mercs (CORE + USOL) before launch');
             autoSendInProgress = true;
             if (!getAutomationActive()) setAutomationActive({ type: 'auto-send', startedAt: Date.now() });

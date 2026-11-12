@@ -8,3 +8,5 @@ tools/*.json
 dist.rar
 *.zip
 td-kaynak/node_modules/
+tools/deste-deney.log
+tools/deste-deney-durum.txt

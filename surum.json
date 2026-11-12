@@ -1,4 +1,4 @@
 {
-  "surum": "1.10.0",
-  "notlar": "Yeni: 'Yalnız ucuz asker (< 2.500)' anahtarı (2.500 CR ve üstü asker hiç gönderilmez). Yeni: 'Stash: Receive all' anahtarı (mailbox'taki eşyaları otomatik alır). İkisi de kapalı gelir."
+  "surum": "1.12.0",
+  "notlar": "Yeni: 'Yalnız USOL askeri' anahtarı (CORE askerleri hiç gönderilmez). Yeni: 'USOL askerine öncelik' anahtarı ve 'Recruit en çok görev' sınırı. TD: kaybedince bekleme 3 dk'dan 1 dk'ya indi. Yeni anahtarların hepsi kapalı gelir."
 }

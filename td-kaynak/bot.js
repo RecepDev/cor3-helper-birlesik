@@ -3,7 +3,7 @@
   window.__cor3TdBot = true;
 
   const KEY = "cor3TdBotAyar";
-  const varsayilan = { acik: false, al: true, birlestir: true, yukselt: true, hazir: false, otomatik: false, desteSec: true, mod: "rating", kosuSatinAl: false, aralik: 300, minOran: 0.15, sabotaj: true, rakipAnaliz: true, ekonomiAltin: 900, yogunluk: 1, minPay: 0, bossSabotaj: false, bossSabotajDalga: 0, pencereKapat: true, gelirGoster: true, macLimiti: 0, insanGibi: false, beklemeMin: 222, beklemeMax: 1000, molaMin: 20, molaMax: 90, uzunAraHer: 8, uzunAraDk: 10, kuleTercih: 1.2, swapYerlestir: false, deneyMinDalga: 10, sabotajBaslangic: 0, bossTumDalga: false, x0Yasak: false, biriktirOnce: 0, ikiliSeviye: 2, ekonomi: true, ekonomiBaslangic: 0, ekonomiYedek: 0, gelirMinOran: 0.11, kalanTahmin: 20, guvenliIlerleme: 0.85, saldiriItme: false, ekonomiOnce: true, sizanSay: true, pasifRakip: true, pasifDalga: 8, pasifFark: 140, rushDalga: 8, rushGelir: 140, rushKarsiYok: true, rushSniperCarpan: 1.3, bossKarsiOran10: 0.8, boss10HazirlikOnce: 2, freezeYukseltCarpan: 0.5, splashYukseltCarpan: 1.3, splashBirlestirCarpan: 1.5, canOkYatir: true, canOkEsik: 12, kotuDizilimDalga: 9, erkenYeterEsik: 1.0, erkenOldur: true, erkenOldurDalga: 8, erkenOldurCan: 13, erkenOldurEsik: 0.6, erkenOldurOran: 0.7, freezeYanYanaBirlestir: true, freezeAzBirlestir: true, bossOncesiHarca: true, icereCekme: true, icMenzil: 3.5, erkenKule: true, zayifKule: true, kotuDizilimKule: true, ustSiraEnAz: 3, etkiliKule: true, etkiliKapsama: 1.5, freezeYayil: true, freezeOncelik: true, freezeOncelikDalga: 15, freezeHedef: 0.8, erkenTitan: true, erkenYukseltme: false, yeterEsik: 0.7, liderSinir: true, liderFark: 1000, crAltSinir: 10000, rematch: true, rematchBekleSn: 8, acidHizliYok: true, acidPayEsik: 0.2, sizmaMin: 0.05, erkenTitanDalga: 9, erkenMinKule: 3, yalnizTitan: true, ekonomiMinKule: 4, bossSavunma: true, bossSavunmaOnce: 2, bossHazirlik: true, bossHazirlikOnce: 2, erkenBakis: 1, bossDmgKontrol: true, bossGuvenEsik: 0.6, tehditYukselt: true, bossKarsi: true, bossKarsiOran: 0.6, bossYukselt: true, bossYukseltOnce: 3, biriktirmeSiniri: true, bosAltin: 1500, sabitCanDevam: true, gelirTakip: true, gelirFarkEsik: 70, bekci: true, bekciDk: 5, ekonomiMinCan: 8, ekonomiCanKaybi: 2, deneySonraRating: false, kosuLimiti: 0, kosuSayacBaslangic: "", sabitDeste: "universal sniper puddle acid splash", deney: false, deneyMac: 8, deneyDesteleri: "universal sniper gatling acid swap", vSurum: 5, gecOyun: true, gecOyunDalga: 0, gecVerimEsik: 1, turTavan: 2, deployOnce: true, ilkSeviye: true, ilkSeviyeDalga: 9, universalCiftYok: true, erkenDeploy: true, oluBirlestir: true, puddleAz: true, puddleDalga: 25, kayipMolaDk: 3, yukseltmeDalga: 15, yukseltmeAcilCan: 5, rematchKac: true, rematchUzunDalga: 30, rematchRiskCan: 7, alanSinerji: true, arkaYerlesim: true, arkaOran: 0.9, uzakMenzil: 3 };
+  const varsayilan = { acik: false, al: true, birlestir: true, yukselt: true, hazir: false, otomatik: false, desteSec: true, mod: "rating", kosuSatinAl: false, aralik: 300, minOran: 0.15, sabotaj: true, rakipAnaliz: true, ekonomiAltin: 900, yogunluk: 1, minPay: 0, bossSabotaj: false, bossSabotajDalga: 0, pencereKapat: true, gelirGoster: true, macLimiti: 0, insanGibi: false, beklemeMin: 222, beklemeMax: 1000, molaMin: 20, molaMax: 90, uzunAraHer: 8, uzunAraDk: 10, kuleTercih: 1.2, swapYerlestir: false, deneyMinDalga: 10, sabotajBaslangic: 0, bossTumDalga: false, x0Yasak: false, biriktirOnce: 0, ikiliSeviye: 2, ekonomi: true, ekonomiBaslangic: 0, ekonomiYedek: 0, gelirMinOran: 0.11, kalanTahmin: 20, guvenliIlerleme: 0.85, saldiriItme: false, ekonomiOnce: true, sizanSay: true, pasifRakip: true, pasifDalga: 8, pasifFark: 140, rushDalga: 8, rushGelir: 140, rushKarsiYok: true, rushSniperCarpan: 1.3, bossKarsiOran10: 0.8, boss10HazirlikOnce: 2, freezeYukseltCarpan: 0.5, splashYukseltCarpan: 1.3, splashBirlestirCarpan: 1.5, canOkYatir: true, canOkEsik: 12, kotuDizilimDalga: 9, erkenYeterEsik: 1.0, erkenOldur: true, erkenOldurDalga: 8, erkenOldurCan: 13, erkenOldurEsik: 0.6, erkenOldurOran: 0.7, freezeYanYanaBirlestir: true, freezeAzBirlestir: true, bossOncesiHarca: true, icereCekme: true, icMenzil: 3.5, erkenKule: true, zayifKule: true, kotuDizilimKule: true, ustSiraEnAz: 3, etkiliKule: true, etkiliKapsama: 1.5, freezeYayil: true, freezeOncelik: true, freezeOncelikDalga: 15, freezeHedef: 0.8, erkenTitan: true, erkenYukseltme: false, yeterEsik: 0.7, liderSinir: true, liderFark: 1000, crAltSinir: 10000, rematch: true, rematchBekleSn: 8, acidHizliYok: true, acidPayEsik: 0.2, sizmaMin: 0.05, erkenTitanDalga: 9, erkenMinKule: 3, yalnizTitan: true, ekonomiMinKule: 4, bossSavunma: true, bossSavunmaOnce: 2, bossHazirlik: true, bossHazirlikOnce: 2, erkenBakis: 1, bossDmgKontrol: true, bossGuvenEsik: 0.6, tehditYukselt: true, bossKarsi: true, bossKarsiOran: 0.6, bossYukselt: true, bossYukseltOnce: 3, biriktirmeSiniri: true, bosAltin: 1500, sabitCanDevam: true, gelirTakip: true, gelirFarkEsik: 70, bekci: true, bekciDk: 5, ekonomiMinCan: 8, ekonomiCanKaybi: 2, deneySonraRating: false, kosuLimiti: 0, kosuSayacBaslangic: "", sabitDeste: "universal sniper puddle acid splash", deney: false, deneyMac: 8, deneyDesteleri: "universal sniper gatling acid swap", vSurum: 5, gecOyun: true, gecOyunDalga: 0, gecVerimEsik: 1, turTavan: 2, deployOnce: true, ilkSeviye: true, ilkSeviyeDalga: 9, universalCiftYok: true, erkenDeploy: true, oluBirlestir: true, puddleAz: true, puddleDalga: 25, kayipMolaDk: 1, yukseltmeDalga: 15, yukseltmeAcilCan: 5, rematchKac: true, rematchUzunDalga: 30, rematchRiskCan: 7, alanSinerji: true, arkaYerlesim: true, arkaOran: 0.9, uzakMenzil: 3, suruDalga: 4, suruCan: 10, suruOran: 0.5, suruAlanEsik: 0.15, suruMinKule: 3, suruDenemeAltin: 600, suruDenemeDalga: 3, bosAltinEsik: 600, bosAltinYedek: 200, bosAltinCan: 3 };
   let ayar = { ...varsayilan };
   try { ayar = { ...varsayilan, ...JSON.parse(localStorage.getItem(KEY) || "{}"), acik: false }; } catch {}
   const kaydet = () => { try { localStorage.setItem(KEY, JSON.stringify(ayar)); } catch {} };
@@ -131,6 +131,7 @@
         const oluKural = ayar.oluBirlestir !== false && s.typeId !== "universal" && s.typeId !== "swap";
         const sOlu = oluKural && olu(s, s.level, s.typeId) && !olu(b, b.level + 1, tip);
         if (oluKural && olu(b, b.level + 1, tip) && !olu(s, b.level + 1, tip)) continue;
+        if (bos > 0 && (st?.currentWave || 0) < (ayar.l3ErkenDalga ?? 10) && b.level === 2 && s.level === 2 && s.typeId !== "universal" && !sOlu) continue;
         const yanYana = YAVAS.has(s.typeId) && s.typeId === b.typeId && Math.max(Math.abs(s.x - b.x), Math.abs(s.y - b.y)) <= 1;
         const puddleErken = ayar.puddleAz !== false && tip === "puddle" && (st?.currentWave || 0) < (ayar.puddleDalga ?? 25) && !yanYana;
         if (puddleErken && !sOlu && bos >= 2) continue;
@@ -417,7 +418,9 @@
     const kapasite = mac?.oncekiDalgaHp || 0;
     const tehditBuyuk = gelen > 0 && kapasite > 0 && gelen > kapasite * 0.5 && p75 > 0.45;
     const yeterli = !canDustu && p75 < (ayar.guvenliIlerleme || 0.6) && !tehditBuyuk;
-    return { yeterli, canDustu, sabit, p75: +p75.toFixed(2), gelen, kapasite, tehditBuyuk };
+    const azCan = (st.lives ?? bas) < (ayar.ekoMinCan ?? 5) && !(ayar.sabitCanDevam !== false && sabit);
+    const ekoYeterli = !azCan && p75 < (ayar.guvenliIlerleme || 0.6) && !tehditBuyuk;
+    return { yeterli, ekoYeterli, canDustu, sabit, p75: +p75.toFixed(2), gelen, kapasite, tehditBuyuk };
   };
 
   const HP_TABLO = [500, 544, 708, 1014, 1247, 1683, 2338, 2849, 3832, 4515, 5627, 5990, 6656, 7371, 8509, 10846, 11604, 12830, 14216, 16435, 21732, 20032, 20607, 23735, 23836, 29819, 27815, 29895, 35501, 35188, 42813, 39217, 42549, 44565, 47924, 50942, 56407, 55525, 62116, 56110, 81251, 59144, 90340, 67310];
@@ -486,7 +489,7 @@
     const sav = savunmaDurumu(st);
     const R = kalanDalga(st);
     const gelirFark = (st.oppIncome || 0) - (st.income || 0);
-    const guvenli = (!tehlike || (ayar.sabitCanDevam !== false && sav.sabit && (st.lives ?? 15) > 4)) && sav.yeterli;
+    const guvenli = ((st.lives ?? 15) >= (ayar.ekoMinCan ?? 5) || (ayar.sabitCanDevam !== false && sav.sabit && (st.lives ?? 15) > 4)) && sav.ekoYeterli;
     const takip = !guvenli && ayar.gelirTakip !== false && gelirFark >= (ayar.gelirFarkEsik ?? 70) && (st.lives ?? 15) > 4 && mac?._takipDalga !== dalga;
     const ekonomiAcik = ayar.ekonomi !== false && dalga >= Math.max(acilis, ayar.ekonomiBaslangic || 0) && (guvenli || takip);
     if (mac && dalga <= (ayar.rushDalga ?? 8) && (st.oppIncome || 0) >= (ayar.rushGelir ?? 140)) mac.rush = true;
@@ -522,6 +525,21 @@
         if (kalan >= 50) return { ...sonuc, gonder: true, neden: "erken öldürme", yedek: Math.max(0, (st.gold || 0) - kalan), rz };
       }
     }
+    const bossYakinSuru = (bossaKalan > 0 && bossaKalan <= (ayar.bossSavunmaOnce ?? 2)) || bossDalgasi;
+    if (ayar.sabotaj && mac && dalga >= Math.max(acilis, ayar.suruDalga ?? 4) && (st.lives ?? 15) >= (ayar.suruCan ?? 10) && sav.yeterli && !tehlike && !bossYakinSuru) {
+      const sd = suruDurumu(st);
+      const s = mac._suru || (mac._suru = { d0: null, rCan0: null, harcanan: 0, kapali: false, d: -1, butce: 0, dHarcanan: 0 });
+      if (sd.uygun && !s.kapali) {
+        if (s.d0 === null) { s.d0 = dalga; s.rCan0 = st.oppLives ?? 15; }
+        if (s.harcanan >= (ayar.suruDenemeAltin ?? 600) && dalga - s.d0 >= (ayar.suruDenemeDalga ?? 3) && (st.oppLives ?? 15) >= s.rCan0) s.kapali = true;
+        if (st.oppLives < s.rCan0) { s.rCan0 = st.oppLives; s.d0 = dalga; s.harcanan = 0; }
+      }
+      if (sd.uygun && !s.kapali) {
+        if (s.d !== dalga) { s.d = dalga; s.butce = Math.floor((st.gold || 0) * (ayar.suruOran ?? 0.5)); s.dHarcanan = 0; }
+        const kalan = s.butce - s.dHarcanan;
+        if (kalan >= 50) return { ...sonuc, gonder: true, neden: "sürü", yedek: Math.max(0, (st.gold || 0) - kalan), alanPay: sd.alanPay };
+      }
+    }
     const bossSavunma = ayar.bossSavunma !== false && ((bossaKalan > 0 && bossaKalan <= (ayar.bossSavunmaOnce ?? 2)) || bossDalgasi) && !bossaYetiyor;
     if (bossSavunma) return { ...sonuc, bossSavunma: true, tahmin: bossTahmin };
     if (ayar.bossHazirlik !== false && bossaKalan > 0 && bossaKalan <= (ayar.bossHazirlikOnce ?? 2) && bossTahmin !== null && bossTahmin > (ayar.guvenliIlerleme || 0.85)) return { ...sonuc, bossHazirlik: true, tahmin: bossTahmin };
@@ -532,6 +550,14 @@
     const saldiriIsliyor = ucOnce !== null && (st.oppLives ?? 15) < ucOnce;
     const itme = ayar.saldiriItme !== false && R <= 8 && dalga >= 10 && saldiriIsliyor && sav.yeterli && !tehlike;
     if (itme) return { ...sonuc, gonder: true, neden: "saldırı", yedek: Math.max(100, Math.round(st.gold * 0.4)) };
+    if (ayar.sabotaj && mac && dalga >= acilis && (st.lives ?? 15) > 4 && !ekonomiAcik) {
+      const yr = titanYarisi(st, rd);
+      if (yr.aktif) {
+        const k = mac._yaris && mac._yaris.d === dalga ? mac._yaris : (mac._yaris = { d: dalga, butce: Math.floor((st.gold || 0) * (ayar.yarisOran ?? 0.6)), harcanan: 0, toplam: mac._yaris?.toplam || 0 });
+        const kalan = k.butce - k.harcanan;
+        if (kalan >= 300) return { ...sonuc, gonder: true, neden: "titan yarışı", yedek: Math.max(0, (st.gold || 0) - kalan), yr };
+      }
+    }
     if (ekonomiAcik) return { ...sonuc, gonder: true, neden: "gelir", yedek: ayar.ekonomiYedek ?? 50, takip };
     return sonuc;
   };
@@ -616,9 +642,39 @@
     return { guc: Math.round(guc), komp, can: st.oppLives, birimler };
   };
 
+  const titanYarisi = (st, rd) => {
+    const agirlik = (ks) => (ks || []).filter((t) => t.typeId !== "universal").reduce((a, t) => a + Math.pow(2, (t.level || 1) - 1), 0);
+    const biz = agirlik(st.towers), rakip = agirlik(st.oppTowers);
+    const fark = (st.oppIncome || 0) - (st.income || 0);
+    const once = rd.length >= 3 ? rd[rd.length - 3].rGelir || 0 : 0;
+    const artis = (st.oppIncome || 0) - once;
+    const azKule = rakip <= biz * (ayar.yarisKuleOran ?? 0.7);
+    const aktif = azKule && (fark >= (ayar.yarisFark ?? 150) || artis >= (ayar.yarisArtis ?? 140));
+    return { aktif, biz, rakip, fark, artis };
+  };
+
+  const suruDurumu = (st) => {
+    const kuleler = (st.oppTowers || []).filter((t) => t.typeId !== "universal");
+    if (kuleler.length < (ayar.suruMinKule ?? 3)) return { uygun: false, alanPay: null };
+    const komp = kompozisyon(st);
+    delete komp.universal;
+    const top = Object.values(komp).reduce((x, y) => x + y, 0) || 1;
+    const alan = (komp.splash || 0) + (komp.acid || 0) + (komp.puddle || 0) + 0.5 * (komp.gatling || 0);
+    const alanPay = +(alan / top).toFixed(2);
+    return { uygun: alanPay <= (ayar.suruAlanEsik ?? 0.15), alanPay };
+  };
+
   const birimSec = (st, yedek, neden) => {
     const tum = st.level?.incomeUnits || [];
     const uygun = tum.filter((b) => st.gold - b.cost >= yedek);
+    if (neden === "titan yarışı") {
+      const titan = tum.find((u) => u.id === "titan") || tum.slice().sort((a, b) => b.cost - a.cost)[0];
+      return titan && st.gold - titan.cost >= yedek ? titan : null;
+    }
+    if (neden === "sürü") {
+      const hizli = uygun.filter((u) => u.typeId === "fast").sort((a, b) => a.cost - b.cost);
+      return hizli[0] || uygun.sort((a, b) => a.cost - b.cost)[0] || null;
+    }
     if (neden === "gelir") {
       const R = kalanDalga(st);
       const iyi = tum.filter((u) => (u.income || 0) / u.cost >= (ayar.gelirMinOran ?? 0.11) && ((u.income || 0) / u.cost) * R * 0.8 > 1).sort((x, y) => (y.income / y.cost) - (x.income / x.cost));
@@ -1116,12 +1172,45 @@
         return;
       }
     }
-    if (ayar.sabotaj && sab.gonder && (sab.neden === "boss karşı sabotaj" || sab.neden === "erken öldürme")) {
+    {
+      const dl = st.currentWave || 0;
+      const tU = (st.level?.incomeUnits || []).find((u) => u.id === "titan");
+      const ilkAc = st.level?.incomeUnlockWave ?? 3;
+      if (ayar.sabotaj && mac && tU && dl >= ilkAc && dl <= (ayar.ilkTitanDalga ?? 10) && mac._ilkTitan !== dl && (st.lives ?? 15) >= (ayar.ilkTitanCan ?? 5) && kuleler.length >= (ayar.erkenMinKule ?? 3)) {
+        if (st.gold >= tU.cost) {
+          ana.sendIncomeUnit(tU.id);
+          mac._ilkTitan = dl;
+          sayac.sabotaj++;
+          harca("birim", tU.cost, tU.id);
+          sonIs = `ilk ${ayar.ilkTitanDalga ?? 10} dalga: her dalga titan (${dl}. dalga)`;
+          sonAksiyon = Date.now();
+          return;
+        }
+        const hyIlk = hasarYeter(st, 1);
+        if (hyIlk.yeter || hyIlk.tahmin === null) {
+          sonIs = `ilk ${ayar.ilkTitanDalga ?? 10} dalga: titan için biriktir (${st.gold}/${tU.cost})`;
+          return;
+        }
+      }
+    }
+    if (ayar.sabotaj && sab.gonder && (sab.neden === "boss karşı sabotaj" || sab.neden === "erken öldürme" || sab.neden === "sürü" || sab.neden === "titan yarışı")) {
       const kb = birimSec(st, sab.yedek, sab.neden);
       if (kb) {
         ana.sendIncomeUnit(kb.id);
         sayac.sabotaj++;
         harca("birim", kb.cost, kb.id);
+        if (sab.neden === "titan yarışı") {
+          if (mac?._yaris) { mac._yaris.harcanan += kb.cost; mac._yaris.toplam = (mac._yaris.toplam || 0) + kb.cost; }
+          sonIs = `titan yarışı: ${kb.id} (rakip gelir +${sab.yr.fark}, son 3 dalga +${sab.yr.artis}, kule ağırlığı ${sab.yr.rakip}/${sab.yr.biz})`;
+          sonAksiyon = Date.now();
+          return;
+        }
+        if (sab.neden === "sürü") {
+          if (mac?._suru) { mac._suru.harcanan += kb.cost; mac._suru.dHarcanan += kb.cost; mac._suru.toplam = (mac._suru.toplam || 0) + kb.cost; }
+          sonIs = `sürü: ${kb.id} (rakipte alan hasarı payı ${sab.alanPay})`;
+          sonAksiyon = Date.now();
+          return;
+        }
         if (sab.neden === "erken öldürme") {
           if (mac?._eo) mac._eo.harcanan += kb.cost;
           sonIs = `erken öldürme: ${kb.id} (rakip zayıf ${sab.rz?.tahmin})`;
@@ -1158,7 +1247,8 @@
     const ustKule = etkili.filter((t) => t.y <= (ayar.ustSiraY ?? 2) && t.typeId !== "universal" && t.typeId !== "swap").length;
     const kotuDizilim = ayar.kotuDizilimKule !== false && (st.currentWave || 0) >= (ayar.kotuDizilimDalga ?? 9) && ustKule < (ayar.ustSiraEnAz ?? 3) && ustBos > 0;
     const hy = hasarYeter(st, erken ? (ayar.erkenBakis ?? 1) : 2);
-    const bossYakin = ayar.bossOncesiHarca !== false && (sab.bossSavunma || sab.bossHazirlik || ((sab.boss || 0) - (st.currentWave || 0) <= (sab.boss === 10 ? (ayar.boss10HazirlikOnce ?? 2) : 1)));
+    const bossRahat = sab.tahmin != null && sab.tahmin <= (ayar.bossGuvenEsik ?? 0.6) && sab.sav?.yeterli && (st.lives ?? 15) >= 12;
+    const bossYakin = ayar.bossOncesiHarca !== false && !bossRahat && (sab.bossSavunma || sab.bossHazirlik || ((sab.boss || 0) - (st.currentWave || 0) <= (sab.boss === 10 ? (ayar.boss10HazirlikOnce ?? 2) : 1)));
     const erkenZayif = (erken && ayar.erkenKule !== false && hy.tahmin !== null && hy.tahmin > (ayar.erkenYeterEsik ?? 1.0)) || (!erken && ayar.zayifKule !== false && !hy.yeter && hy.tahmin !== null) || kotuDizilim || bossYakin;
     if (!erkenZayif && erken && ayar.sabotaj && ayar.ekonomi !== false && titanU && (st.currentWave || 0) < acilisD && etkili.length >= minKule && st.gold < titanU.cost + 100 + 10 * (st.buildCount || 0)) {
       sonIs = `erken titan için biriktir (${st.gold}/${titanU.cost}, ${acilisD}. dalgada açılır)`;
@@ -1225,6 +1315,17 @@
         return;
       }
     }
+    if (ayar.sabotaj && !sab.bossSavunma && !sab.bossHazirlik && !sab.yasak && !sab.biriktir && (st.currentWave || 0) >= acilisD && (st.lives ?? 15) >= (ayar.bosAltinCan ?? 3) && (st.oppIncome || 0) > (st.income || 0) && st.gold >= (ayar.bosAltinEsik ?? 600)) {
+      const bb = birimSec(st, ayar.bosAltinYedek ?? 200, "gelir");
+      if (bb) {
+        ana.sendIncomeUnit(bb.id);
+        sayac.sabotaj++;
+        harca("birim", bb.cost, bb.id);
+        sonIs = `boş altın gelire: ${bb.id} (rakip +${(st.oppIncome || 0) - (st.income || 0)} önde, altın ${st.gold})`;
+        sonAksiyon = Date.now();
+        return;
+      }
+    }
     sonIs = sab.bossSavunma ? `boss (${sab.boss}) öncesi savunma` : sab.bossHazirlik ? `boss (${sab.boss}) hazırlığı: savunma yetmeyebilir (${sab.tahmin})` : sab.yasak ? "boss dalgası, birim gönderilmiyor" : sab.biriktir ? `biriktir (boss ${sab.boss})` : "bekle";
   };
 
@@ -1276,7 +1377,7 @@
       sonuc: st?.winner === undefined || st?.winner < 0 ? "belirsiz" : kazandi ? "galibiyet" : "maglubiyet",
       dalga: mac.dalga, can: st?.lives, rakipCan: st?.oppLives, hasar: Math.round(mac.hasar), oldurme: mac.oldurme, sizan: mac.sizan, rakipSizan: mac.rakipSizan,
       harcama: mac.harcama, birimler: mac.birimler, yukseltmeler: mac.yukseltmeler, deste: mac.deste,
-      tahta: tahtaOzet(st?.towers), turSeviye: st?.typeLevels, rakipTahta: tahtaOzet(st?.oppTowers), rakipTurSeviye: st?.oppTypeLevels,
+      tahta: tahtaOzet(st?.towers), turSeviye: st?.typeLevels, rakipTahta: tahtaOzet(st?.oppTowers), rakipTurSeviye: st?.oppTypeLevels, suru: mac?._suru ? { toplam: mac._suru.toplam || 0, kapali: mac._suru.kapali } : null, yaris: mac?._yaris?.toplam || 0,
       gelir: st?.income, rakipGelir: st?.oppIncome, dalgalar: mac.dalgalar, ayar: { ...ayar },
     };
     try { window.postMessage({ kaynak: "cor3td-bot", mac: kayit, ogrenme }, location.origin); } catch {}

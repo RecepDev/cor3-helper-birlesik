@@ -274,8 +274,15 @@ export function setupWsRelay() {
                         usolElite2.forEach(es => { if (es.mercenary) eliteIds.add(es.mercenary.id); });
                         allMercs.forEach(m => { if (!m._isElite) m._isElite = eliteIds.has(m.id); });
 
+                        const recruitSinir = settings.autoSendMerc.recruitSinir || 0;
+                        if (recruitSinir > 0) {
+                            for (let i = allMercs.length - 1; i >= 0; i--) if (allMercs[i].rank === 'RECRUIT' && (allMercs[i].missionsCompleted || 0) >= recruitSinir) allMercs.splice(i, 1);
+                        }
                         if (settings.autoSendMerc.yalnizUcuz) {
                             for (let i = allMercs.length - 1; i >= 0; i--) { const c = configs[allMercs[i].id]; if (!c || (c.totalCost || 0) >= 2500) allMercs.splice(i, 1); }
+                        }
+                        if (settings.autoSendMerc.yalnizUsol) {
+                            for (let i = allMercs.length - 1; i >= 0; i--) if (allMercs[i]._market !== 'usol') allMercs.splice(i, 1);
                         }
                         const ucuzSinir = settings.autoSendMerc.applyMercCostLimiter ? (settings.autoSendMerc.maxMercCost || 3000) : 3000;
                         const ucuzVar = allMercs.some(m => m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= ucuzSinir);
@@ -283,9 +290,10 @@ export function setupWsRelay() {
                         const usolEksik = ((localData.gorevEsya && localData.gorevEsya.maddeler) || []).filter(m => m.usol && !m.tam).length;
                         const usolGorev = !ucuzVar && !!settings.autoSendMerc.usolGorev && usolEksik > 0;
                         const usolTavan = settings.autoSendMerc.usolTavan || 6000;
-                        const usolAday = (usolKalan > 0 || usolGorev) ? allMercs.filter(m => m._market === 'usol' && m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= usolTavan).sort((a, b) => (configs[a.id].totalCost || 0) - (configs[b.id].totalCost || 0))[0] : null;
+                        const usolOncelik = !!settings.autoSendMerc.usolOncelik;
+                        const usolAday = (usolKalan > 0 || usolGorev || usolOncelik) ? allMercs.filter(m => m._market === 'usol' && m.status === 'AVAILABLE' && configs[m.id] && (configs[m.id].totalCost || 0) <= usolTavan).sort((a, b) => (configs[a.id].totalCost || 0) - (configs[b.id].totalCost || 0))[0] : null;
                         if (usolAday) {
-                            console.log('[COR3 Helper] Auto-send: USOL run with', usolAday.callsign, 'cost:', configs[usolAday.id].totalCost, usolKalan > 0 ? 'remaining: ' + (usolKalan - 1) : 'quest items missing: ' + usolEksik);
+                            console.log('[COR3 Helper] Auto-send: USOL run with', usolAday.callsign, 'cost:', configs[usolAday.id].totalCost, usolKalan > 0 ? 'remaining: ' + (usolKalan - 1) : usolGorev ? 'quest items missing: ' + usolEksik : 'USOL priority');
                             if (usolKalan > 0) chrome.storage.sync.set({ autoSendMerc: { ...settings.autoSendMerc, usolKalan: usolKalan - 1 } });
                             const og = settings.autoSendMerc.olumGorev || 0;
                             if ((og > 0 && (usolAday.missionsCompleted || 0) >= og) || (settings.autoSendMerc.olumEsikUsol > 0 && (configs[usolAday.id].totalCost || 0) > Math.max(settings.autoSendMerc.olumEsikUsol, 5500))) {
@@ -341,6 +349,7 @@ export function setupWsRelay() {
                             console.log('[COR3 Helper] Auto-choose merc: selected', available[0].callsign, '(' + available[0]._market + ') cost:', configs[available[0].id].totalCost);
                         } else {
                             console.log('[COR3 Helper] Auto-send: no fitting merc available after filtering');
+                            window.__cor3AutoSendBosBekle = Date.now() + 120000;
                             chrome.storage.local.set({ mercWarning: 'No fitting merc available — all mercs filtered out or unavailable.' + (_autoSendUsolSkipped ? ' (USOL market unreachable)' : '') });
                             setAutoSendUsolSkipped(false);
                             setAutoSendMercRetryCount(0);
