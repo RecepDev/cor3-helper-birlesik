@@ -1,4 +1,4 @@
 {
-  "surum": "1.13.0",
-  "notlar": "Yeni: 'Market üst limiti' bölümü. CORE ve USOL için en çok asker ücreti ayrı ayrı girilebilir; bu ücretin üstündeki asker hiç gönderilmez. 0 = sınır yok (varsayılan)."
+  "surum": "1.14.0",
+  "notlar": "TD: maç ortasında gelir için para biriktirirken, parası yeten kule türü yükseltmesi artık önce yapılıyor (kayıplarda yükseltmeler hiç yapılmıyordu)."
 }
