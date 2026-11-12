@@ -1,4 +1,4 @@
 {
-  "surum": "1.12.0",
-  "notlar": "Yeni: 'Yalnız USOL askeri' anahtarı (CORE askerleri hiç gönderilmez). Yeni: 'USOL askerine öncelik' anahtarı ve 'Recruit en çok görev' sınırı. TD: kaybedince bekleme 3 dk'dan 1 dk'ya indi. Yeni anahtarların hepsi kapalı gelir."
+  "surum": "1.13.0",
+  "notlar": "Yeni: 'Market üst limiti' bölümü. CORE ve USOL için en çok asker ücreti ayrı ayrı girilebilir; bu ücretin üstündeki asker hiç gönderilmez. 0 = sınır yok (varsayılan)."
 }

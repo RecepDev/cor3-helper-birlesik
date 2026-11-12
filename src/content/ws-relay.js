@@ -281,6 +281,10 @@ export function setupWsRelay() {
                         if (settings.autoSendMerc.yalnizUcuz) {
                             for (let i = allMercs.length - 1; i >= 0; i--) { const c = configs[allMercs[i].id]; if (!c || (c.totalCost || 0) >= 2500) allMercs.splice(i, 1); }
                         }
+                        const tavanCore = settings.autoSendMerc.tavanCore || 0, tavanUsol = settings.autoSendMerc.tavanUsol || 0;
+                        if (tavanCore > 0 || tavanUsol > 0) {
+                            for (let i = allMercs.length - 1; i >= 0; i--) { const m = allMercs[i], t = m._market === 'usol' ? tavanUsol : tavanCore, c = configs[m.id]; if (t > 0 && (!c || (c.totalCost || 0) > t)) allMercs.splice(i, 1); }
+                        }
                         if (settings.autoSendMerc.yalnizUsol) {
                             for (let i = allMercs.length - 1; i >= 0; i--) if (allMercs[i]._market !== 'usol') allMercs.splice(i, 1);
                         }
