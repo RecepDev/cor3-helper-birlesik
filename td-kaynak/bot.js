@@ -1267,7 +1267,7 @@
         return;
       }
       const hedefU = (st.level?.incomeUnits || []).filter((u) => (u.income || 0) / u.cost >= (ayar.gelirMinOran ?? 0.11)).sort((x, y) => y.income / y.cost - x.income / x.cost)[0];
-      if (hedefU && !sab.takip && kalanDalga(st) * (hedefU.income / hedefU.cost) * 0.8 > 1 && !(ayar.yukseltOnce !== false && y && y.yetiyor && (bosHucre <= 0 || yUstun))) { sonIs = `gelir için biriktir (${st.gold}/${hedefU.cost})`; return; }
+      if (hedefU && !sab.takip && kalanDalga(st) * (hedefU.income / hedefU.cost) * 0.8 > 1) { sonIs = `gelir için biriktir (${st.gold}/${hedefU.cost})`; return; }
     }
 
     if (ayar.al && alabilir && (erkenZayif || (!(yUstun && y.yetiyor) && !(yCokUstun && !y.yetiyor && y.g.maliyet <= st.gold + 400)))) {

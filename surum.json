@@ -1,4 +1,4 @@
 {
-  "surum": "1.14.0",
-  "notlar": "TD: maç ortasında gelir için para biriktirirken, parası yeten kule türü yükseltmesi artık önce yapılıyor (kayıplarda yükseltmeler hiç yapılmıyordu)."
+  "surum": "1.14.1",
+  "notlar": "1.14.0'daki deneme TD değişikliği geri alındı; TD 1.13.0 ile aynı."
 }
