@@ -1,4 +1,4 @@
 {
-  "surum": "1.14.1",
-  "notlar": "1.14.0'daki deneme TD değişikliği geri alındı; TD 1.13.0 ile aynı."
+  "surum": "1.15.0",
+  "notlar": "Değişiklik: 'Yalnız ucuz asker' anahtarı artık 6.000 CR altındaki USOL askerlerini de gönderir (CORE sınırı 2.500 kaldı). Açıkken USOL öncelik, USOL görev ve Yalnız USOL anahtarları da kullanılabilir."
 }
