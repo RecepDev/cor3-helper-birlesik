@@ -1,4 +1,4 @@
 {
-  "surum": "1.15.0",
-  "notlar": "Değişiklik: 'Yalnız ucuz asker' anahtarı artık 6.000 CR altındaki USOL askerlerini de gönderir (CORE sınırı 2.500 kaldı). Açıkken USOL öncelik, USOL görev ve Yalnız USOL anahtarları da kullanılabilir."
+  "surum": "1.15.17",
+  "notlar": "Düzeltmeler: planlayıcı açılışta takılı kalan 'çalışıyor' durumunu sıfırlar (TD artık saatlerce beklemez). Market güncellemesinde erişimi olmayan yollar (ör. E1L3) 30 dk atlanır, sürekli sunucu değiştirme biter."
 }

@@ -267,6 +267,9 @@ export function __cor3PostUnreachable(marketType, serverName) {
 window.__cor3DarkMarketPathThrough = false;
 window.__cor3SoyuzMarketPathThrough = false;
 window.__cor3UsolMarketPathThrough = false;
+window.__cor3PtKotu = window.__cor3PtKotu || {};
+window.__cor3PtBitti = window.__cor3PtBitti || {};
+var PT_BEKLE_MS = 30 * 60000;
 
 // Shared path-through function for any market (dark/soyuz/usol).
 // Fetches network map, finds paths via DFS, walks intermediates (set endpoint + hack),
@@ -275,6 +278,11 @@ function __cor3MarketPathThroughRetry(marketType) {
     var cfg = MARKET_CONFIG[marketType];
     if (!cfg) return;
     var label = marketType.toUpperCase();
+    if (window.__cor3PtBitti[marketType] && Date.now() - window.__cor3PtBitti[marketType] < PT_BEKLE_MS) {
+        console.log('[COR3 Helper] Path-through: ' + label + ' skipped, all paths failed ' + Math.round((Date.now() - window.__cor3PtBitti[marketType]) / 60000) + ' min ago');
+        __cor3PostUnreachable(marketType, null);
+        return;
+    }
     window[cfg.flag] = true;
     console.log('[COR3 Helper] Path-through: fetching network map for ' + label + ' dynamic pathing');
 
@@ -298,8 +306,10 @@ function __cor3MarketPathThroughRetry(marketType) {
 
         var pathIdx = 0;
         function tryNextPath() {
+            while (pathIdx < paths.length && paths[pathIdx].slice(0, -1).some(function (sv) { var t = window.__cor3PtKotu[sv.id]; return t && Date.now() - t < PT_BEKLE_MS; })) pathIdx++;
             if (pathIdx >= paths.length) {
                 window[cfg.flag] = false;
+                window.__cor3PtBitti[marketType] = Date.now();
                 console.log('[COR3 Helper] Path-through: all ' + paths.length + ' path(s) exhausted for ' + label);
                 __cor3PostUnreachable(marketType, null);
                 return;
@@ -337,6 +347,7 @@ function __cor3MarketPathThroughRetry(marketType) {
                         clearTimeout(epTimer);
                         if (evt.data.success === false) {
                             var errMsg = evt.data.error && evt.data.error.message ? evt.data.error.message : 'unknown';
+                            window.__cor3PtKotu[server.id] = Date.now();
                             if (errMsg === 'server-in-maintenance') {
                                 console.log('[COR3 Helper] Path-through: ' + server.name + ' in maintenance — trying next path');
                                 tryNextPath();
@@ -349,6 +360,7 @@ function __cor3MarketPathThroughRetry(marketType) {
                         __cor3EnsureServerAccess(server.id, server.name).then(function () {
                             setTimeout(nextStep, 500);
                         }).catch(function (e) {
+                            window.__cor3PtKotu[server.id] = Date.now();
                             console.log('[COR3 Helper] Path-through: ' + server.name + ' access failed — ' + e.message + ' — trying next path');
                             tryNextPath();
                         });
@@ -362,6 +374,7 @@ function __cor3MarketPathThroughRetry(marketType) {
                         __cor3EnsureServerAccess(server.id, server.name).then(function () {
                             setTimeout(nextStep, 500);
                         }).catch(function () {
+                            window.__cor3PtKotu[server.id] = Date.now();
                             tryNextPath();
                         });
                     }

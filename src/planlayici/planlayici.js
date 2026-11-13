@@ -345,6 +345,7 @@
     return !!(d && d.macta && simdi() - (d.zaman || 0) < 30000);
   };
   const mesgul = (v) => chrome.storage.local.set({ planMesgul: !!v });
+  chrome.storage.local.set({ planMesgul: false, planTdSerbest: false });
 
   let dongude = false;
   let ciftDurum = null;
@@ -437,10 +438,10 @@
     try {
       calisma = { adim: "hazirlik", bas: simdi(), sonDongu: calisma.sonDongu, secilen: [], haricMagaza: [] };
       kaydetCalisma();
-      await mesgul(true);
-      yaz("döngü: TD yeni maça girmeyecek, maç bitmesi bekleniyor");
+      if (ayar.tdAramada) { await chrome.storage.local.set({ planTdSerbest: true }); await mesgul(false); if (tdMacta()) yaz("döngü: TD maçı sürüyor, beklemeden devam"); }
+      else { await mesgul(true); yaz("döngü: TD yeni maça girmeyecek, maç bitmesi bekleniyor"); }
       const bekleBas = simdi();
-      while (tdMacta()) {
+      while (!ayar.tdAramada && tdMacta()) {
         if (!ayar.acik || ayar.oneri) throw new Error("kapatıldı");
         if (simdi() - bekleBas > 40 * 60000) throw new Error("TD maçı 40 dk'da bitmedi");
         await uyu(5000);
@@ -477,7 +478,7 @@
       const r1 = await aktar({ action: "startValuableSearch", onlyServers: araListe });
       if (!r1.ok) throw new Error("arama başlatılamadı: " + (r1.hata || ""));
       if (await bekleMesaj("COR3_VALUABLE_DONE", 120 * 60000) === null) throw new Error("arama 120 dk'da bitmedi");
-      if (ayar.tdAramada) {
+      if (ayar.tdAramada && ayar.tdSatista === false) {
         await chrome.storage.local.set({ planTdSerbest: false });
         await mesgul(true);
         const tb = simdi();
