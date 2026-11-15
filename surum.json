@@ -1,4 +1,4 @@
 {
-  "surum": "1.15.17",
-  "notlar": "Düzeltmeler: planlayıcı açılışta takılı kalan 'çalışıyor' durumunu sıfırlar (TD artık saatlerce beklemez). Market güncellemesinde erişimi olmayan yollar (ör. E1L3) 30 dk atlanır, sürekli sunucu değiştirme biter."
+  "surum": "1.16.0",
+  "notlar": "Decrypt jobları başarı şansı %70'in üzerindeyse alınır. Market not reachable olunca markete yeniden bağlanıp tekrar denenir (teslimde 4 deneme, sonra job 30 sn ve 90 sn sonra 2 kez daha)."
 }

@@ -241,6 +241,20 @@ export async function processQueue() {
             }
         } catch (e) {
             var errText = friendlyError(e.message);
+            if (e.message && /market.not.reachable/i.test(e.message) && (job._mnrTekrar || 0) < 2 && !state.abortFlag) {
+                job._mnrTekrar = (job._mnrTekrar || 0) + 1;
+                var mnrBekle = job._mnrTekrar === 1 ? 30000 : 90000;
+                log('⚠️ Market not reachable: ' + job.name + ' — reconnecting to market and retrying in ' + Math.round(mnrBekle / 1000) + 's (' + job._mnrTekrar + '/2)', 'warn');
+                state._lastEndpointServerId = null;
+                job.status = 'pending';
+                job.error = null;
+                updateTracker();
+                await delay(mnrBekle);
+                try { await fetchMapData(true); } catch (mnrErr) {}
+                state._currentJobRef = null;
+                i--;
+                continue;
+            }
             if (e.message && (e.message.includes('job-not-found-refresh') || e.message.includes('job-not-found') || e.message.includes('Job is not available'))) {
                 job.status = 'skipped';
                 job.error = 'Job no longer available (stale data)';

@@ -484,7 +484,8 @@ export async function stepCompleteJob(job) {
     }
 
     var completeRetries = 0;
-    var MAX_COMPLETE_RETRIES = 2;
+    var MAX_COMPLETE_RETRIES = 4;
+    var MNR_BEKLE = [3000, 8000, 20000, 45000];
     while (true) {
         sendCmd('job.complete', { marketId: job.marketId, jobId: job.jobId });
         try {
@@ -500,11 +501,16 @@ export async function stepCompleteJob(job) {
                 if (errMsg.indexOf('market-not-reachable') >= 0 && completeRetries < MAX_COMPLETE_RETRIES) {
                     completeRetries++;
                     log('Market not reachable during job.complete — re-setting endpoint and retrying (' + completeRetries + '/' + MAX_COMPLETE_RETRIES + ')', 'warn');
-                    await delay(1500);
+                    await delay(MNR_BEKLE[completeRetries - 1] || 3000);
+                    state._lastEndpointServerId = null;
                     var marketName = getMarketNameById(job.marketId);
-                    if (marketName === 'D4RK') await stepSetEndpoint(DARK_MARKET_SERVER_ID);
-                    else if (marketName === 'SOYUZ') await stepSetEndpoint(SOYUZ_MARKET_SERVER_ID);
-                    else if (marketName === 'USOL') await stepSetEndpoint(USOL_MARKET_SERVER_ID);
+                    try {
+                        if (marketName === 'D4RK') await stepSetEndpoint(DARK_MARKET_SERVER_ID);
+                        else if (marketName === 'SOYUZ') await stepSetEndpoint(SOYUZ_MARKET_SERVER_ID);
+                        else if (marketName === 'USOL') await stepSetEndpoint(USOL_MARKET_SERVER_ID);
+                    } catch (epErr) {
+                        log('Market endpoint retry failed: ' + epErr.message, 'warn');
+                    }
                     await delay(500);
                     continue;
                 }

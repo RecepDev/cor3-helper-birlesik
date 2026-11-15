@@ -810,6 +810,6 @@ export async function decryptOnKontrol(job) {
     var olasilik = enIyi < enAz ? 0 : (enIyi - enAz + 1) / (gerek - enAz + 1);
     var odul = job.rewardCredits || 0, depozito = job.deposit || 0;
     log('Pre-check decrypt: success chance ' + Math.round(olasilik * 100) + '% (reward ' + odul + ', deposit ' + depozito + ')');
-    if (olasilik < 1) return { yetmez: true, neden: 'decrypt power ' + enIyi + ' < encryption level ' + enAz + '-' + gerek + ', chance ' + Math.round(olasilik * 100) + '% (' + ext + ')' };
+    if (olasilik <= 0.7) return { yetmez: true, neden: 'decrypt power ' + enIyi + ' < encryption level ' + enAz + '-' + gerek + ', chance ' + Math.round(olasilik * 100) + '% (' + ext + ')' };
     return null;
 }
