@@ -15,6 +15,17 @@ import {
 } from './auto-send.js';
 import { setMarketRefreshInProgress, setAutoUpdateMarketsLastRefresh, setSeqRefreshRunning } from './auto-update-markets.js';
 
+function olumIsaret(id, olsun) {
+    if (!id) return;
+    chrome.storage.local.get('olumMerc', (o) => {
+        const m = { ...(o.olumMerc || {}) };
+        if (olsun) m[id] = Date.now();
+        else if (m[id]) delete m[id];
+        else return;
+        chrome.storage.local.set({ olumMerc: m });
+    });
+}
+
 function fetchDailyRewards(token) {
     fetch('https://svc-corie.cor3.gg/api/user-daily-claim/rewards', {
         headers: { 'Authorization': token }
@@ -302,8 +313,8 @@ export function setupWsRelay() {
                             const og = settings.autoSendMerc.olumGorev || 0;
                             if ((og > 0 && (usolAday.missionsCompleted || 0) >= og) || (settings.autoSendMerc.olumEsikUsol > 0 && (configs[usolAday.id].totalCost || 0) > Math.max(settings.autoSendMerc.olumEsikUsol, 5500))) {
                                 console.log('[COR3 Helper] Auto-send: USOL merc', usolAday.callsign, 'missions', usolAday.missionsCompleted, '— risky decisions');
-                                chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [usolAday.id]: Date.now() } }));
-                            }
+                                olumIsaret(usolAday.id, true);
+                            } else olumIsaret(usolAday.id, false);
                             setAutoSendUsolSkipped(false);
                             proceedWithMerc(usolAday.id, allMercs, settings, localData);
                             return;
@@ -317,7 +328,7 @@ export function setupWsRelay() {
                         if (kurban.length > 0) {
                             const k = kurban[0];
                             console.log('[COR3 Helper] Auto-send: sending merc to die (risky decisions):', k.callsign, 'cost:', configs[k.id].totalCost, 'missions:', k.missionsCompleted);
-                            chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [k.id]: Date.now() } }));
+                            olumIsaret(k.id, true);
                             setAutoSendUsolSkipped(false);
                             proceedWithMerc(k.id, allMercs, settings, localData);
                             return;
@@ -348,8 +359,8 @@ export function setupWsRelay() {
                             const olumGorev = settings.autoSendMerc.olumGorev || 0;
                             if (olumGorev > 0 && (available[0].missionsCompleted || 0) >= olumGorev) {
                                 console.log('[COR3 Helper] Auto-send: merc reached', available[0].missionsCompleted, 'missions (>=', olumGorev, ') — risky decisions');
-                                chrome.storage.local.get('olumMerc', (o) => chrome.storage.local.set({ olumMerc: { ...(o.olumMerc || {}), [mercId]: Date.now() } }));
-                            }
+                                olumIsaret(mercId, true);
+                            } else olumIsaret(mercId, false);
                             console.log('[COR3 Helper] Auto-choose merc: selected', available[0].callsign, '(' + available[0]._market + ') cost:', configs[available[0].id].totalCost);
                         } else {
                             console.log('[COR3 Helper] Auto-send: no fitting merc available after filtering');
@@ -362,6 +373,7 @@ export function setupWsRelay() {
                             return;
                         }
                     }
+                    if (!settings.autoSendMerc.autoChooseMerc) olumIsaret(mercId, false);
                     setAutoSendUsolSkipped(false);
                     proceedWithMerc(mercId, allMercs, settings, localData);
                 });

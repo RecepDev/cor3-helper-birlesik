@@ -1,4 +1,4 @@
 {
-  "surum": "1.16.0",
-  "notlar": "Decrypt jobları başarı şansı %70'in üzerindeyse alınır. Market not reachable olunca markete yeniden bağlanıp tekrar denenir (teslimde 4 deneme, sonra job 30 sn ve 90 sn sonra 2 kez daha)."
+  "surum": "1.16.2",
+  "notlar": "Hiç risk alma düzeltmesi: öldürme işareti artık her gönderimde yeniden hesaplanıyor; sınırı geçmeyen askerin eski işareti silinir, güvenli kararlar seçilir."
 }
