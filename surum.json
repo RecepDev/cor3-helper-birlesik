@@ -1,4 +1,4 @@
 {
-  "surum": "1.16.2",
-  "notlar": "Hiç risk alma düzeltmesi: öldürme işareti artık her gönderimde yeniden hesaplanıyor; sınırı geçmeyen askerin eski işareti silinir, güvenli kararlar seçilir."
+  "surum": "1.16.4",
+  "notlar": "Düşük canda boşta altın düzeltmesi (TD): tahta doluyken ve altın yeterken titan gönderilir; üst sınır 3 seviyede kalır."
 }
