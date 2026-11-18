@@ -1,4 +1,4 @@
 {
-  "surum": "1.16.4",
-  "notlar": "Düşük canda boşta altın düzeltmesi (TD): tahta doluyken ve altın yeterken titan gönderilir; üst sınır 3 seviyede kalır."
+  "surum": "1.16.6",
+  "notlar": "Sürüm 1.16.6: Helper güncel sürüm (TD kuralları yalnız canlıda)."
 }
