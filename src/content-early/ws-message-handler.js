@@ -6,6 +6,7 @@ import {
 } from './state.js';
 import { queueRetryOp, humanDelay } from './ws-send.js';
 import { mailMesaj } from './mail-al.js';
+import { droneMesaj } from './drone-al.js';
 
 // Forward declaration — set by index.js after market-requests is loaded
 let __cor3PostUnreachable = null;
@@ -34,6 +35,7 @@ export function handleWsMessage(rawData, socket) {
     const payload = parsed[1];
 
     if (eventName === 'mail') { try { mailMesaj(payload); } catch (e) {} }
+    if (eventName === 'drone-missions') { try { droneMesaj(payload); } catch (e) {} }
 
     // Handle token-expired error — close sockets to force game to reconnect with fresh token
     if (eventName === 'error' && payload && payload.message === 'token-expired') {

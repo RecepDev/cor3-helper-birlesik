@@ -67,12 +67,11 @@ export function ganimetSatilacak(items, fazla) {
     const sayac = {};
     const liste = [];
     for (const i of items || []) {
-        if (i.source !== 'EXPEDITION' || !i.canSell || !(i.sellPrice > 0) || i.tier === 'QUEST') continue;
+        if ((i.source !== 'EXPEDITION' && !/DRONE/i.test(String(i.source || ''))) || !i.canSell || !(i.sellPrice > 0) || i.tier === 'QUEST') continue;
         const ad = esyaAd(i.name);
         const gerek = GOREV_AD[ad];
         const adet = i.quantity || 1;
-        if (gerek === undefined) { liste.push({ item: i, adet }); continue; }
-        if (!fazla) continue;
+        if (gerek === undefined || !fazla) { liste.push({ item: i, adet }); continue; }
         const onceki = sayac[ad] || 0;
         const tut = Math.max(0, Math.min(adet, gerek - onceki));
         sayac[ad] = onceki + tut;
@@ -480,6 +479,7 @@ function mailAyarGonder() {
     try {
         chrome.storage.sync.get('autoSendMerc', (ay) => {
             window.postMessage({ type: 'COR3_MAIL_AYAR', acik: !!(ay.autoSendMerc && ay.autoSendMerc.mailAl) }, '*');
+            window.postMessage({ type: 'COR3_DRONE_AYAR', acik: !!(ay.autoSendMerc && ay.autoSendMerc.droneTekrar) }, '*');
         });
     } catch (e) {}
 }
