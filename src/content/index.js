@@ -10,6 +10,7 @@ import './auto-refresh.js';
 import './solvers.js';
 import './dom-tweaks.js';
 import './log-writers.js';
+import './oto-hack.js';
 
 // Setup functions (register listeners)
 import { setupWsRelay } from './ws-relay.js';

@@ -149,7 +149,7 @@
     chrome.storage.local.get(["durum", "planMesgul", "automationQueueStatus"], (r) => {
       if (r.durum && r.durum.macta && t - (r.durum.zaman || 0) < 30000) return;
       const q = r.automationQueueStatus || {};
-      if (r.planMesgul || ["auto-valuable", "auto-valuable-force"].includes(q.active)) { yaz("sistem", "minigame türü algılanamadı ama planlayıcı/arama sürüyor, yenileme ertelendi"); tespitler = []; return; }
+      if (r.planMesgul || ["auto-valuable", "auto-valuable-force", "auto-hack"].includes(q.active)) { yaz("sistem", "minigame türü algılanamadı ama planlayıcı/arama sürüyor, yenileme ertelendi"); tespitler = []; return; }
       try { localStorage.setItem("cor3TespitYenile", String(t)); } catch {}
       yaz("sistem", "minigame türü algılanamadı (2 kez), sayfa yenileniyor");
       bosalt();

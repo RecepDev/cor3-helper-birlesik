@@ -5,6 +5,7 @@ import { log, running, setRunning, setMode, signalDone } from './state.js';
 import { runSearch } from './search-mode.js';
 import { runSeller } from './seller-mode.js';
 import { forceMaintenanceBatch } from './maintenance.js';
+import { runHackAll } from './hack-all-mode.js';
 
 window.addEventListener('message', function (event) {
     if (event.source !== window) return;
@@ -35,6 +36,19 @@ window.addEventListener('message', function (event) {
             if (err.message !== 'Stopped') log('Seller error: ' + err.message, 'error');
             signalDone();
         });
+    }
+
+    if (event.data && event.data.type === 'COR3_VALUABLE_START_HACKALL') {
+        if (running) {
+            window.postMessage({ type: 'COR3_VALUABLE_HACKALL_DONE', ozet: { mesgul: true } }, '*');
+            return;
+        }
+        setRunning(true);
+        setMode('hackall');
+        runHackAll().catch(function (err) {
+            if (err.message !== 'Stopped') log('Auto hack error: ' + err.message, 'error');
+            window.postMessage({ type: 'COR3_VALUABLE_HACKALL_DONE', ozet: { hata: err.message } }, '*');
+        }).finally(function () { setRunning(false); setMode(null); });
     }
 
     if (event.data && event.data.type === 'COR3_VALUABLE_STOP') {

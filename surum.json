@@ -1,4 +1,4 @@
 {
-  "surum": "1.19.0",
-  "notlar": "Sürüm 1.19.0: Archived Expeditions'ta drone seferleri (sonuç, yer/görev, hasar, gelen eşyalar) ve otomatik satılan eşyalar (adet, CR)."
+  "surum": "1.20.0",
+  "notlar": "Yeni anahtar: Tüm sunucuları hackle (varsayılan kapalı). 30 dakikada bir erişimi olmayan, eldeki yazılım ve donanımla hacklenebilen sunucuları en yakından başlayarak hackler."
 }

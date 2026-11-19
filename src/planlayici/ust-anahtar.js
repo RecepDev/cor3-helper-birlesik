@@ -49,6 +49,7 @@
         { b: "Joblar ve planlayıcı", ad: "Çift tur", tip: "plan", k: "ciftTur", kos: (d) => (!d.plan.acik && "Planlayıcı kapalı") || (d.plan.birikim && "Birikim açıkken çift tur çalışmaz"), ipucu: "Store'a uzun süre varsa önce arama ve satış, store yaklaşınca tekrar arama, satış ve force. Kapalıyken 'Döngü arası' süresiyle tek tur çalışır." },
         { b: "Joblar ve planlayıcı", ad: "Force", tip: "plan", k: "force", kos: (d) => (!d.plan.acik && "Planlayıcı kapalı") || (d.plan.aramaKapali && "Arama/force kapalı açık"), ipucu: "Satıştan sonra sunucuları bilerek bakıma sokar; bakım job saatinden önce biter. Bakımdan çıkan sunucunun erişimi sıfırlanır, yeniden hack gerekir." },
         { b: "Joblar ve planlayıcı", ad: "Arama/force kapalı", tip: "plan", k: "aramaKapali", kos: (d) => !d.plan.acik && "Planlayıcı kapalı", ipucu: "Planlayıcı açık kalır ama arama, satış ve force turlarını başlatmaz. Daily ops, Helper jobları ve TD sürer." },
+        { b: "Joblar ve planlayıcı", ad: "Tüm sunucuları hackle", tip: "yerel", k: "otoHackAcik", ipucu: "Açıkken 30 dakikada bir haritadaki erişimi olmayan sunucuları, elindeki yazılım ve donanımla hacklenebiliyorsa en yakından uzağa otomatik hackler. Yazılımı olmayan ya da savunması en iyi donanımla bile yüksek kalan sunucular atlanır. Bakımdaki sunuculara dokunmaz, TD maçı ya da başka Helper işi sürerken başlamaz; bir tur en çok 25 dakika sürer. Son tur özeti Şimdi kutusunda." },
         { b: "Expedition gönderimi", ad: "Paralı asker gönder", tip: "dom", id: "autoSendMercenaryToggle", ipucu: "Auto Send Mercenary. Expedition dönünce ganimeti toplar, günlük sınıra kadar paralı askeri yeniden gönderir (her gönderim CR tutar, +10 renown)." },
         { b: "Expedition gönderimi", ad: "Asker otomatik seç", tip: "dom", id: "autoChooseMercToggle", kos: (d) => !d.dom.autoSendMercenaryToggle && "Paralı asker gönder kapalı", ipucu: "Uygun askerler içinden en ucuzunu (eşitse en az riskliyi) seçer. Kapalıyken popup'ta seçili asker gider." },
         { b: "Expedition gönderimi", ad: "Yalnız ucuz asker (CORE < 2.500, USOL < 6.000)", tip: "merc", k: "yalnizUcuz", kos: OTO, ipucu: "Açıkken yalnız ucuz askerler gönderilir: CORE askeri 2.500 CR'ın, USOL askeri 6.000 CR'ın altındaysa. Ucuzlar dinlenirken hiç gönderim olmaz; USOL görev yolu ve öldürme yolları da bu sınırların üstündeki askeri göndermez." },
@@ -146,7 +147,7 @@
             d.textContent = "İndirilemedi: " + (e && e.message ? e.message : e);
         }
     };
-    const YEREL_AYAR = ["ayar", "planAyar", "yanPanel", "kararDeney", "kararGuvenli"];
+    const YEREL_AYAR = ["ayar", "planAyar", "yanPanel", "kararDeney", "kararGuvenli", "otoHackAcik"];
     const aktarNot = (m) => { aktar.querySelector("[data-not]").textContent = m; };
     aktar.querySelector('[data-a="disa"]').addEventListener("click", async () => {
         const sync = await chrome.storage.sync.get(null);
@@ -191,10 +192,10 @@
     anlik.id = "cor3Anlik";
     anlik.style.cssText = "padding:6px 10px;margin-bottom:4px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border);font-size:10.5px;color:var(--text-secondary);line-height:1.5";
     kutu.after(anlik);
-    const HELPER_IS = { "auto-jobs": "store jobları yapılıyor", "auto-valuable": "değerli dosya arama/satış", "auto-valuable-force": "sunucular bakıma sokuluyor (force)", "auto-update-markets": "market verisi yenileniyor", "auto-send": "paralı asker gönderiliyor", "auto-daily": "daily ops" };
+    const HELPER_IS = { "auto-jobs": "store jobları yapılıyor", "auto-valuable": "değerli dosya arama/satış", "auto-valuable-force": "sunucular bakıma sokuluyor (force)", "auto-update-markets": "market verisi yenileniyor", "auto-send": "paralı asker gönderiliyor", "auto-daily": "daily ops", "auto-hack": "sunucular hackleniyor" };
     const ADIM = { bos: "bekliyor", hazirlik: "TD maçının bitmesini bekliyor", arama: "değerli dosya arıyor", satis: "satış yapıyor", force: "force yapıyor", "görev sorusu": "görev sorusunun cevabını bekliyor" };
     const hh = (ms) => new Date(ms).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-    const anlikCiz = () => chrome.storage.local.get(["durum", "ayar", "automationQueueStatus", "planDurum", "planAyar", "dailyOpsData", "autoJobsDebugLogs", "valuableDebugLogs", "valuableSearchRunning", "valuableSellerRunning", "sonDuzeltme", "bildirimDurum"], (r) => {
+    const anlikCiz = () => chrome.storage.local.get(["durum", "ayar", "automationQueueStatus", "planDurum", "planAyar", "dailyOpsData", "autoJobsDebugLogs", "valuableDebugLogs", "valuableSearchRunning", "valuableSellerRunning", "sonDuzeltme", "bildirimDurum", "otoHackAcik", "otoHackSon"], (r) => {
         const d = r.durum || {}, p = r.planDurum || {}, q = r.automationQueueStatus || {}, pa = r.planAyar || {};
         const tdIs = !(r.ayar && r.ayar.acik) ? "kapalı" : (d.macta && d.mac && !d.mac.bitti ? `maçta (dalga ${d.mac.dalga ?? "?"})` : d.sonIs || "-");
         const hIs = q.active ? (HELPER_IS[q.active] || q.active) + ((q.queued || []).length ? ` · sırada: ${q.queued.map((x) => HELPER_IS[x] || x).join(", ")}` : "") : "boşta";
@@ -212,10 +213,11 @@
         const sat = (b, v) => `<div style="display:flex;gap:6px"><span style="color:var(--text-dim);flex:none;width:62px">${b}</span><span style="color:var(--text)">${kac(v)}</span></div>`;
         const sonLog = (l) => { const x = Array.isArray(l) && l.length ? l[l.length - 1] : null; if (!x) return null; const t = Date.parse(x.timestamp || x.time || "") || 0; return t && Date.now() - t < 3 * 60000 ? `${hh(t)} ${String(x.msg || "").replace(/^[^\wÇĞİÖŞÜçğıöşü]+/, "").slice(0, 110)}` : null; };
         const jobSon = sonLog(r.autoJobsDebugLogs), aramaSon = sonLog(r.valuableDebugLogs);
-        const aramaVar = q.active === "auto-valuable" || q.active === "auto-valuable-force" || r.valuableSearchRunning || r.valuableSellerRunning;
+        const aramaVar = q.active === "auto-valuable" || q.active === "auto-valuable-force" || q.active === "auto-hack" || r.valuableSearchRunning || r.valuableSellerRunning;
         anlik.innerHTML = `<div style="color:var(--accent-light-cyan);font-size:12px;font-weight:600;margin-bottom:3px">Şimdi</div>` + sat("TD", tdIs) + sat("Helper", hIs) + sat("Planlayıcı", pIs)
             + ((q.active === "auto-jobs" || jobSon) && jobSon ? sat("Job", jobSon) : "")
-            + (aramaVar && aramaSon ? sat(r.valuableSellerRunning ? "Satış" : q.active === "auto-valuable-force" ? "Force" : "Arama", aramaSon) : "")
+            + (aramaVar && aramaSon ? sat(r.valuableSellerRunning ? "Satış" : q.active === "auto-valuable-force" ? "Force" : q.active === "auto-hack" ? "Hack" : "Arama", aramaSon) : "")
+            + (() => { const h = r.otoHackSon; if (!r.otoHackAcik || !h || !h.bit) return ""; if (h.mesgul) return ""; const y = h.hata && !h.hacklendi ? "hata: " + h.hata : `${(h.hacklendi || []).length} hacklendi, ${(h.basarisiz || []).length} olmadı, ${(h.yetmez || []).length} güç yetmez, ${(h.yazilimYok || []).length} yazılım yok` + (h.kalan ? `, ${h.kalan} sonraki tura` : "") + (h.hata ? ` (${h.hata})` : ""); return sat("Oto hack", hh(h.bit) + " " + y); })()
             + (r.sonDuzeltme && Date.now() - r.sonDuzeltme.t < 6 * 3600000 ? sat("Düzeltme", hh(r.sonDuzeltme.t) + " " + r.sonDuzeltme.m) : "")
             + (() => { const l = (r.bildirimDurum && r.bildirimDurum.liste) || []; const x = l[l.length - 1]; const t = x && Date.parse(x.t); return t && Date.now() - t < 12 * 3600000 ? `<div style="display:flex;gap:6px"><span style="color:var(--text-dim);flex:none;width:62px">Uyarı</span><span style="color:var(--accent-orange)">${kac(hh(t) + " " + x.m)}</span></div>` : ""; })()
             + `<div style="color:var(--accent-light-cyan);font-size:12px;font-weight:600;margin:5px 0 3px">Sıradaki</div>`
