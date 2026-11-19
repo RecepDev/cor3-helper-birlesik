@@ -100,6 +100,10 @@ function ganimetSat() {
             ganimetSuruyor = true;
             ganimetSon = Date.now();
             console.log('[COR3 Helper] Loot-sell: selling', liste.length, 'item(s):', liste.map((x) => x.item.name + ' x' + x.adet + ' (' + x.item.sellPrice + ')').join(', '));
+            chrome.storage.local.get('ganimetSatis', (gs) => {
+                const k = (gs.ganimetSatis || []).concat(liste.map((x) => ({ t: Date.now(), ad: x.item.name, adet: x.adet, fiyat: x.item.sellPrice, kaynak: x.item.source })));
+                chrome.storage.local.set({ ganimetSatis: k.slice(-400) });
+            });
             let idx = 0;
             const sonraki = () => {
                 if (idx >= liste.length) {
@@ -489,6 +493,10 @@ try { chrome.storage.onChanged.addListener((d, alan) => { if (alan === 'sync' &&
 window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_DRONE_DURUM' || !isContextValid()) return;
     try { chrome.storage.local.set({ droneDurum: e.data.durum }); } catch (x) {}
+});
+window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.type !== 'COR3_DRONE_ARSIV' || !isContextValid()) return;
+    try { chrome.storage.local.set({ droneArsiv: e.data.arsiv }); } catch (x) {}
 });
 window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_WS_MAIL_ALINDI') return;

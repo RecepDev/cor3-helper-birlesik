@@ -4,7 +4,7 @@ var acik = false;
 var zamanlayici = null;
 var secenek = null;
 var aktif = null;
-var son = { claim: 0, repair: 0, launch: 0, karar: 0, join: 0 };
+var son = { claim: 0, repair: 0, launch: 0, karar: 0, join: 0, arsiv: 0 };
 var cozulen = {};
 var SAKLA = 'cor3DroneSon';
 
@@ -20,6 +20,18 @@ function sor() {
     if (Date.now() - son.join > 600000) { son.join = Date.now(); joinRoomNow('drone-missions'); }
     setTimeout(function () { gonder('get.options'); }, 1500);
     setTimeout(function () { gonder('get.active'); }, 3500);
+    if (Date.now() - son.arsiv > 900000) { son.arsiv = Date.now(); setTimeout(function () { gonder('get.archived', { limit: 20 }); }, 5500); }
+}
+
+function arsivYaz(d) {
+    var liste = (d.items || []).map(function (m) {
+        return {
+            id: m.id, status: m.status, outcome: m.outcome, yer: m.location && m.location.name, gorev: m.mission && m.mission.name,
+            bas: m.startTime, bit: m.completedAt || m.endTime, dayanik: m.launchDurability, hasar: m.damageDealt,
+            loot: (m.loot || []).map(function (x) { return { ad: x.name || x.itemConfigId, adet: x.quantity || 1, alindi: !!x.claimed, resim: x.imageUrl || '' }; })
+        };
+    });
+    try { window.postMessage({ type: 'COR3_DRONE_ARSIV', arsiv: { t: Date.now(), drone: secenek && secenek.drone && secenek.drone.name, liste: liste } }, '*'); } catch (x) {}
 }
 
 function kurZaman() {
@@ -132,6 +144,7 @@ export function droneMesaj(payload) {
             aktif = nesne(d) ? d : null; break;
         case 'claim':
             aktif = nesne(d) ? d : null;
+            son.arsiv = 0;
             if (acik) setTimeout(function () { gonder('get.options'); }, 2000);
             break;
         case 'get.options': case 'repair': case 'repair.cancel':
@@ -150,8 +163,12 @@ export function droneMesaj(payload) {
             break;
         case 'completed':
             if (nesne(d) && aktif && aktif.id === d.missionId) aktif = Object.assign({}, aktif, { status: d.status || 'COMPLETED', outcome: d.outcome, loot: d.loot });
-            if (acik) setTimeout(sor, 3000);
+            son.arsiv = 0;
+            setTimeout(sor, 3000);
             break;
+        case 'get.archived':
+            if (nesne(d)) arsivYaz(d);
+            return;
         case 'loot.expired':
             if (acik) setTimeout(sor, 3000);
             break;

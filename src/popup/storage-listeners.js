@@ -21,7 +21,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
 
     // Archived expeditions
-    if (changes.archivedExpeditionsData) {
+    if (changes.archivedExpeditionsData || changes.droneArsiv || changes.ganimetSatis) {
         loadArchivedExpeditions();
     }
 

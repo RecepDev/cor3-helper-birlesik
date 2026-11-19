@@ -1,4 +1,4 @@
 {
-  "surum": "1.18.0",
-  "notlar": "Sürüm 1.18.0: Active Expeditions bölümünde drone kartı (görev, durum, dayanıklılık, pil, kalan süre); drone otomatiği gerçek oyun verisine göre düzeltildi."
+  "surum": "1.19.0",
+  "notlar": "Sürüm 1.19.0: Archived Expeditions'ta drone seferleri (sonuç, yer/görev, hasar, gelen eşyalar) ve otomatik satılan eşyalar (adet, CR)."
 }
