@@ -119,6 +119,43 @@ function buildContainerItems(containerData) {
     return frag;
 }
 
+function droneKart(d) {
+    if (!d || !d.secenek) return null;
+    const o = d.secenek;
+    const a = d.aktif && d.aktif.status !== 'ARCHIVED' ? d.aktif : null;
+    const dr = o.drone || {};
+    const bat = o.battery || {};
+    let durum = 'IDLE';
+    if (a) durum = a.status || 'RUNNING';
+    else if (dr.isDestroyed) durum = 'DESTROYED';
+    else if (dr.isRepairing) durum = 'REPAIRING';
+    else if (!(dr.durability > 0)) durum = 'INOPERABLE';
+    const card = el('div', { className: 'expedition-card drone-card' });
+    card.appendChild(el('div', { className: 'exp-header' },
+        el('span', { className: 'exp-title' }, `Drone${dr.name ? ' ' + dr.name : ''}${a ? ' — ' + ((a.location && a.location.name) || '') + (a.mission && a.mission.name ? ' / ' + a.mission.name : '') : ''}`),
+        el('span', { className: 'exp-status' + (durum === 'RUNNING' ? ' running' : '') }, durum)
+    ));
+    card.appendChild(el('div', { className: 'detail-row' },
+        el('span', { className: 'label' }, 'Durability:'), ` ${dr.durability ?? '--'} / ${dr.maxDurability ?? 100}`
+    ));
+    card.appendChild(el('div', { className: 'detail-row' },
+        el('span', { className: 'label' }, 'Battery:'), ` ${bat.current ?? '--'} / ${bat.max ?? 100}`
+    ));
+    if (a && a.status === 'COMPLETED') {
+        const n = (a.loot || []).filter((x) => !x.claimed).length;
+        card.appendChild(el('div', { className: 'detail-row' }, el('span', { className: 'label' }, 'Loot:'), ` ${n} item${n === 1 ? '' : 's'} waiting`));
+    }
+    const bitis = a && a.status === 'RUNNING' ? a.endTime : (durum === 'REPAIRING' && dr.repairSecondsRemaining ? new Date(d.t + dr.repairSecondsRemaining * 1000).toISOString() : null);
+    if (bitis) {
+        const id = 'drone_' + (a ? a.id : 'repair');
+        state.expeditionEndTimes[id] = bitis;
+        card.appendChild(el('div', { className: 'exp-timer-row' },
+            el('span', { style: 'font-size:11px;color:var(--accent-orange);' }, '⏳ ', el('span', { className: 'exp-timer', dataset: { expId: id } }, formatTimeRemaining(bitis)))
+        ));
+    }
+    return card;
+}
+
 export function renderExpeditionInfo(expeditions) {
     clearEl(expeditionInfoContainer);
 
@@ -127,6 +164,14 @@ export function renderExpeditionInfo(expeditions) {
             const errorEl = renderExpeditionError(result.expeditionLaunchError);
             if (errorEl) expeditionInfoContainer.appendChild(errorEl);
         }
+    });
+
+    chrome.storage.local.get('droneDurum', (r) => {
+        const kart = droneKart(r.droneDurum);
+        if (!kart) return;
+        const bos = expeditionInfoContainer.querySelector('.no-decisions');
+        if (bos && (!expeditions || expeditions.length === 0)) bos.remove();
+        expeditionInfoContainer.appendChild(kart);
     });
 
     if (!expeditions || expeditions.length === 0) {

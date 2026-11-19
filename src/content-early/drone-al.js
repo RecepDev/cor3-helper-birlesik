@@ -12,17 +12,21 @@ function gonder(action, data) {
     wsSend('42' + JSON.stringify(['event', { event: { name: 'drone-missions', action: action }, data: data || {} }]));
 }
 
+function durumYaz() {
+    try { window.postMessage({ type: 'COR3_DRONE_DURUM', durum: { t: Date.now(), secenek: secenek, aktif: aktif } }, '*'); } catch (x) {}
+}
+
 function sor() {
-    if (!acik) return;
     if (Date.now() - son.join > 600000) { son.join = Date.now(); joinRoomNow('drone-missions'); }
     setTimeout(function () { gonder('get.options'); }, 1500);
     setTimeout(function () { gonder('get.active'); }, 3500);
 }
 
 function kurZaman() {
-    if (zamanlayici) { clearInterval(zamanlayici); zamanlayici = null; }
-    if (acik) { setTimeout(sor, 6000); zamanlayici = setInterval(sor, 180000); }
+    if (acik) setTimeout(sor, 6000);
 }
+setTimeout(sor, 20000);
+zamanlayici = setInterval(sor, 180000);
 
 window.addEventListener('message', function (e) {
     if (e.source !== window || !e.data) return;
@@ -47,7 +51,7 @@ function hedefSec(o) {
     var loc = o.locations || [];
     var s = null;
     try { s = JSON.parse(localStorage.getItem(SAKLA) || 'null'); } catch (x) {}
-    if (!s && aktif && aktif.locationConfigId && aktif.missionConfigId) s = { locationConfigId: aktif.locationConfigId, missionConfigId: aktif.missionConfigId };
+    if (!s && aktif && aktif.location && aktif.mission) s = { locationConfigId: aktif.location.id, missionConfigId: aktif.mission.id };
     if (s) {
         var l = loc.find(function (x) { return x.id === s.locationConfigId; });
         var m = l && (l.missions || []).find(function (x) { return x.id === s.missionConfigId; });
@@ -64,7 +68,7 @@ function kararVer(a) {
     (a.resolvedEvents || []).forEach(function (r) { cozuldu[r.eventId] = 1; });
     for (var i = 0; i < ev.length; i++) {
         var e = ev[i];
-        if ((e.type !== 'DECISION' && e.type !== 'HAZARD') || cozuldu[e.eventId] || cozulen[e.eventId]) continue;
+        if ((e.type !== 'DECISION' && e.type !== 'HAZARD') || e.isResolved || cozuldu[e.eventId] || cozulen[e.eventId]) continue;
         var ops = (e.options || []).filter(function (o) { return !o.requiredModuleId; });
         if (!ops.length) continue;
         ops.sort(function (x, y) {
@@ -154,5 +158,6 @@ export function droneMesaj(payload) {
         default:
             return;
     }
+    durumYaz();
     if (acik) setTimeout(karar, 500);
 }

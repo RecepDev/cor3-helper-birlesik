@@ -15,7 +15,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
 
     // Expedition data (not handled by expeditions.js — it only caches for veteran check)
-    if (changes.expeditionsData) {
+    if (changes.expeditionsData || changes.droneDurum) {
         loadExpeditions();
         refreshAllTimestamps();
     }

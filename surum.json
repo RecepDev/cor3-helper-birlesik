@@ -1,4 +1,4 @@
 {
-  "surum": "1.17.0",
-  "notlar": "Sürüm 1.17.0: Görev fazlasını sat kapalıyken gelen tüm eşyalar satılır; drone seferden dönünce yeniden gönderme ve 0 dayanıklılıkta tamir (yeni anahtar, varsayılan kapalı)."
+  "surum": "1.18.0",
+  "notlar": "Sürüm 1.18.0: Active Expeditions bölümünde drone kartı (görev, durum, dayanıklılık, pil, kalan süre); drone otomatiği gerçek oyun verisine göre düzeltildi."
 }

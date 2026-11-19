@@ -487,6 +487,10 @@ mailAyarGonder();
 setTimeout(mailAyarGonder, 15000);
 try { chrome.storage.onChanged.addListener((d, alan) => { if (alan === 'sync' && d.autoSendMerc) mailAyarGonder(); }); } catch (e) {}
 window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.type !== 'COR3_DRONE_DURUM' || !isContextValid()) return;
+    try { chrome.storage.local.set({ droneDurum: e.data.durum }); } catch (x) {}
+});
+window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_WS_MAIL_ALINDI') return;
     console.log('[COR3 Helper] Mail claim.all result:', e.data.error ? JSON.stringify(e.data.error) : 'ok');
     setTimeout(() => window.postMessage({ type: 'COR3_REQUEST_STASH' }, '*'), 3000);
