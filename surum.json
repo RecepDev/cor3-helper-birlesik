@@ -1,4 +1,4 @@
 {
-  "surum": "1.20.0",
-  "notlar": "Yeni anahtar: Tüm sunucuları hackle (varsayılan kapalı). 30 dakikada bir erişimi olmayan, eldeki yazılım ve donanımla hacklenebilen sunucuları en yakından başlayarak hackler."
+  "surum": "1.21.0",
+  "notlar": "Yeni anahtar: Drone: riskli kararlar (varsayılan kapalı). Drone seferindeki kararlarda en çok ganimet getiren seçeneği seçer; dayanıklılık yarının altındaysa güvenli seçime döner."
 }

@@ -1,6 +1,7 @@
 import { wsSend, joinRoomNow } from './ws-send.js';
 
 var acik = false;
+var riskli = false;
 var zamanlayici = null;
 var secenek = null;
 var aktif = null;
@@ -43,6 +44,8 @@ zamanlayici = setInterval(sor, 180000);
 window.addEventListener('message', function (e) {
     if (e.source !== window || !e.data) return;
     if (e.data.type === 'COR3_DRONE_AYAR') {
+        var yeniRiskli = !!e.data.riskli;
+        if (yeniRiskli !== riskli) { riskli = yeniRiskli; console.log('[COR3 Helper] Drone: risky decisions ' + (riskli ? 'on' : 'off')); }
         var yeni = !!e.data.acik;
         if (yeni === acik) return;
         acik = yeni;
@@ -83,14 +86,18 @@ function kararVer(a) {
         if ((e.type !== 'DECISION' && e.type !== 'HAZARD') || e.isResolved || cozuldu[e.eventId] || cozulen[e.eventId]) continue;
         var ops = (e.options || []).filter(function (o) { return !o.requiredModuleId; });
         if (!ops.length) continue;
+        var dr = secenek && secenek.drone;
+        var cesur = riskli && !(dr && dr.durability < (dr.maxDurability || 100) * 0.5);
         ops.sort(function (x, y) {
             var rx = (x.effect && x.effect.riskDelta) || 0, ry = (y.effect && y.effect.riskDelta) || 0;
+            var lx = (x.effect && x.effect.lootDelta) || 0, ly = (y.effect && y.effect.lootDelta) || 0;
+            if (cesur) { if (lx !== ly) return ly - lx; return rx - ry; }
             if (rx !== ry) return rx - ry;
-            return ((y.effect && y.effect.lootDelta) || 0) - ((x.effect && x.effect.lootDelta) || 0);
+            return ly - lx;
         });
         cozulen[e.eventId] = 1;
         son.karar = Date.now();
-        console.log('[COR3 Helper] Drone: decision "' + (e.message || e.eventId) + '" -> ' + (ops[0].label || ops[0].id));
+        console.log('[COR3 Helper] Drone: decision "' + (e.message || e.eventId) + '" -> ' + (ops[0].label || ops[0].id) + (cesur ? ' (risky)' : ''));
         setTimeout(function (mid, eid, oid) { gonder('resolve.event', { missionId: mid, eventId: eid, optionId: oid }); }, 1500 + Math.floor(Math.random() * 2000), a.id, e.eventId, ops[0].id);
         return true;
     }
