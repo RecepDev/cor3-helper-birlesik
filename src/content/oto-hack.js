@@ -33,8 +33,10 @@ function kontrol() {
     if (getAutomationActive() || getAutomationQueue().length) return;
     if (Date.now() - sonDeneme < 60000) return;
     try {
-        chrome.storage.local.get(['otoHackAcik', 'otoHackSon', 'durum', 'ayar', 'planMesgul'], (r) => {
+        chrome.storage.local.get(['otoHackAcik', 'otoHackSon', 'durum', 'ayar', 'planMesgul', 'planAyar'], (r) => {
             if (!r.otoHackAcik || r.planMesgul) return;
+            chrome.storage.sync.get('autoFinishAllJobsEnabled', (sy) => {
+            if (!(r.planAyar && r.planAyar.acik) && !(sy && sy.autoFinishAllJobsEnabled)) return;
             const d = r.durum || {};
             if (r.ayar && r.ayar.acik && d.macta && d.mac && !d.mac.bitti) return;
             const son = (r.otoHackSon && (r.otoHackSon.bit || r.otoHackSon.bas)) || 0;
@@ -42,6 +44,7 @@ function kontrol() {
             if (getAutomationActive() || getAutomationQueue().length || calisiyor) return;
             sonDeneme = Date.now();
             baslat();
+            });
         });
     } catch (e) {}
 }

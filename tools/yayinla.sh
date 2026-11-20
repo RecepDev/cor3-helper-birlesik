@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 s=$(node -p "require('./package.json').version")
 notlar="${1:-}"
 TD_KAYNAK="$(pwd -W)/td-kaynak" npm run build >/dev/null
+for f in dist/*.js dist/td/*.js; do node --check "$f" || { echo "SOZDIZIMI HATASI $f"; exit 1; }; done
 node -e "require('fs').writeFileSync('surum.json', JSON.stringify({surum: process.argv[1], notlar: process.argv[2]}, null, 2) + '\n')" "$s" "$notlar"
 rm -f cor3-helper-birlesik.zip
 (cd dist && powershell -NoProfile -Command "Compress-Archive -Path * -DestinationPath ../cor3-helper-birlesik.zip -Force")

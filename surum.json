@@ -1,4 +1,4 @@
 {
-  "surum": "1.22.0",
-  "notlar": "Yeni ayar: Drone: güvenli eşik % (varsayılan 50). Dayanıklılık bu yüzdenin altındaysa drone riskli kararları bırakır."
+  "surum": "1.22.1",
+  "notlar": "Düzeltme: 1.22.0'da üst anahtarlar görünmüyordu (ipucu metninde sözdizimi hatası). Tüm sunucuları hackle artık Planlayıcı ya da Helper jobları açıkken çalışır."
 }
