@@ -1,4 +1,4 @@
 {
-  "surum": "1.21.0",
-  "notlar": "Yeni anahtar: Drone: riskli kararlar (varsayılan kapalı). Drone seferindeki kararlarda en çok ganimet getiren seçeneği seçer; dayanıklılık yarının altındaysa güvenli seçime döner."
+  "surum": "1.22.0",
+  "notlar": "Yeni ayar: Drone: güvenli eşik % (varsayılan 50). Dayanıklılık bu yüzdenin altındaysa drone riskli kararları bırakır."
 }

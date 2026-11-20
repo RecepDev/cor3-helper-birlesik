@@ -483,7 +483,7 @@ function mailAyarGonder() {
     try {
         chrome.storage.sync.get('autoSendMerc', (ay) => {
             window.postMessage({ type: 'COR3_MAIL_AYAR', acik: !!(ay.autoSendMerc && ay.autoSendMerc.mailAl) }, '*');
-            window.postMessage({ type: 'COR3_DRONE_AYAR', acik: !!(ay.autoSendMerc && ay.autoSendMerc.droneTekrar), riskli: !!(ay.autoSendMerc && ay.autoSendMerc.droneRiskli) }, '*');
+            window.postMessage({ type: 'COR3_DRONE_AYAR', acik: !!(ay.autoSendMerc && ay.autoSendMerc.droneTekrar), riskli: !!(ay.autoSendMerc && ay.autoSendMerc.droneRiskli), esik: ay.autoSendMerc && typeof ay.autoSendMerc.droneRiskEsik === 'number' ? ay.autoSendMerc.droneRiskEsik : 50 }, '*');
         });
     } catch (e) {}
 }

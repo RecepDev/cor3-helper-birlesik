@@ -2,6 +2,7 @@ import { wsSend, joinRoomNow } from './ws-send.js';
 
 var acik = false;
 var riskli = false;
+var esik = 50;
 var zamanlayici = null;
 var secenek = null;
 var aktif = null;
@@ -46,6 +47,7 @@ window.addEventListener('message', function (e) {
     if (e.data.type === 'COR3_DRONE_AYAR') {
         var yeniRiskli = !!e.data.riskli;
         if (yeniRiskli !== riskli) { riskli = yeniRiskli; console.log('[COR3 Helper] Drone: risky decisions ' + (riskli ? 'on' : 'off')); }
+        if (typeof e.data.esik === 'number' && e.data.esik !== esik) { esik = Math.max(0, Math.min(100, e.data.esik)); console.log('[COR3 Helper] Drone: safe threshold ' + esik + '%'); }
         var yeni = !!e.data.acik;
         if (yeni === acik) return;
         acik = yeni;
@@ -87,7 +89,7 @@ function kararVer(a) {
         var ops = (e.options || []).filter(function (o) { return !o.requiredModuleId; });
         if (!ops.length) continue;
         var dr = secenek && secenek.drone;
-        var cesur = riskli && !(dr && dr.durability < (dr.maxDurability || 100) * 0.5);
+        var cesur = riskli && !(dr && dr.durability * 100 < (dr.maxDurability || 100) * esik);
         ops.sort(function (x, y) {
             var rx = (x.effect && x.effect.riskDelta) || 0, ry = (y.effect && y.effect.riskDelta) || 0;
             var lx = (x.effect && x.effect.lootDelta) || 0, ly = (y.effect && y.effect.lootDelta) || 0;
