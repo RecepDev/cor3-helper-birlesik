@@ -101,7 +101,8 @@ const sidePanelBtn = document.getElementById('sidePanelBtn');
             { id: 'decisionsSectionToggle', label: 'Decisions' },
             { id: 'inventorySectionToggle', label: 'Inventory' },
             { id: 'mercenariesSectionToggle', label: 'Mercenaries' },
-            { id: 'archivedExpSectionToggle', label: 'Archived' }
+            { id: 'archivedExpSectionToggle', label: 'Archived' },
+            { id: 'droneEkoSectionToggle', label: 'Drone Economy' }
         ];
         const splitIndices = [];
         for (const sp of splitPoints) {

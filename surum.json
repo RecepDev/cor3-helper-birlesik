@@ -1,4 +1,4 @@
 {
-  "surum": "1.22.3",
-  "notlar": "Düzeltme: Archived Expeditions'ta satılan eşyaların fiyatı, satış seferin kayıtlı bitişinden önce yapıldıysa görünmüyordu (ör. drone ganimeti). Eşleştirme artık seferin başlangıcından sonraki satışları sayar."
+  "surum": "1.23.0",
+  "notlar": "Yeni bölüm: Drone Economy. Her döngüde (tamirden dayanıklılık 0 olana kadar) ödenen tamir, sefer sayısı ve sonuçları, satılan ganimet ve net kâr; üstte toplam. Drone sefer geçmişi artık kalıcı tutuluyor (droneGecmis)."
 }

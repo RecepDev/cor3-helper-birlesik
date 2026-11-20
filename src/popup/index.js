@@ -14,6 +14,7 @@ import './inventory.js';
 import './loadout.js';
 import './mercenaries.js';
 import './archived-expeditions.js';
+import './drone-ekonomi.js';
 import './auto-job-solver-ui.js';
 import './auto-valuable-seller-ui.js';
 import './helper-mode.js';

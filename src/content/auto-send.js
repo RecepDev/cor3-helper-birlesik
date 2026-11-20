@@ -496,7 +496,14 @@ window.addEventListener('message', (e) => {
 });
 window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_DRONE_ARSIV' || !isContextValid()) return;
-    try { chrome.storage.local.set({ droneArsiv: e.data.arsiv }); } catch (x) {}
+    try {
+        chrome.storage.local.set({ droneArsiv: e.data.arsiv });
+        chrome.storage.local.get('droneGecmis', (g) => {
+            const m = new Map(((g && g.droneGecmis) || []).map((x) => [x.id, x]));
+            for (const x of (e.data.arsiv && e.data.arsiv.liste) || []) if (x && x.id && x.status !== 'RUNNING') m.set(x.id, x);
+            chrome.storage.local.set({ droneGecmis: [...m.values()].sort((a, b) => String(a.bas).localeCompare(String(b.bas))).slice(-500) });
+        });
+    } catch (x) {}
 });
 window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_WS_MAIL_ALINDI') return;

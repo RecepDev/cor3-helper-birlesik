@@ -7,6 +7,7 @@
 import { refreshAllTimestamps } from './timestamps.js';
 import { loadExpeditions } from './expeditions.js';
 import { loadArchivedExpeditions } from './archived-expeditions.js';
+import { loadDroneEkonomi } from './drone-ekonomi.js';
 import { loadCachedDailyOps } from './daily-ops.js';
 
 const mercWarning = document.getElementById('mercWarning');
@@ -23,6 +24,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
     // Archived expeditions
     if (changes.archivedExpeditionsData || changes.droneArsiv || changes.ganimetSatis) {
         loadArchivedExpeditions();
+    }
+    if (changes.droneGecmis || changes.droneArsiv || changes.ganimetSatis || changes.droneDurum) {
+        loadDroneEkonomi();
     }
 
     // Mercenary warning (separate from merc data listener in mercenaries.js)
