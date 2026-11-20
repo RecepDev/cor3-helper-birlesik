@@ -1,4 +1,4 @@
 {
-  "surum": "1.22.1",
-  "notlar": "Düzeltme: 1.22.0'da üst anahtarlar görünmüyordu (ipucu metninde sözdizimi hatası). Tüm sunucuları hackle artık Planlayıcı ya da Helper jobları açıkken çalışır."
+  "surum": "1.22.2",
+  "notlar": "Drone: riskli kararlar artık dayanıklılık eşiği olmadan hep en çok ganimetli seçeneği seçer (drone yok olmuyor, en kötü 0 dayanıklılıkla döner). Güvenli eşik ayarı kaldırıldı."
 }
