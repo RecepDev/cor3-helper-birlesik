@@ -1,4 +1,4 @@
 {
-  "surum": "1.23.0",
-  "notlar": "Yeni bölüm: Drone Economy. Her döngüde (tamirden dayanıklılık 0 olana kadar) ödenen tamir, sefer sayısı ve sonuçları, satılan ganimet ve net kâr; üstte toplam. Drone sefer geçmişi artık kalıcı tutuluyor (droneGecmis)."
+  "surum": "1.23.1",
+  "notlar": "Drone Economy: satışlar artık satıştan önce başlamış en yeni sefere bağlanır (aynı adlı eşya eski sefere yazılmıyordu)."
 }

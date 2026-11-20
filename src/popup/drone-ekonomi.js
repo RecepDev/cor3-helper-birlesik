@@ -22,23 +22,24 @@ export function droneHesapla(gecmis, satis, durum) {
     const rate = (durum && durum.secenek && durum.secenek.repairRate && durum.secenek.repairRate.creditsPerPoint) || 200;
     const seferler = gecmis.filter((m) => m && m.bas && m.status !== 'RUNNING').slice().sort((a, b) => new Date(a.bas) - new Date(b.bas));
     const kalan = (satis || []).filter((x) => /DRONE/i.test(x.kaynak || '')).map((x) => ({ ...x, n: adNorm(x.ad), kal: x.adet || 1 })).sort((a, b) => a.t - b.t);
+    const kalemler = [];
     for (const m of seferler) {
-        const bas = new Date(m.bas).getTime();
         m._gelir = 0; m._satilan = 0; m._kalan = 0;
-        for (const it of m.loot || []) {
-            let ist = it.adet || 1;
-            const n = adNorm(it.ad);
-            for (const s of kalan) {
-                if (ist <= 0) break;
-                if (s.kal <= 0 || s.n !== n || s.t < bas) continue;
-                const al = Math.min(s.kal, ist);
-                s.kal -= al; ist -= al;
-                m._gelir += al * (s.fiyat || 0);
-                m._satilan += al;
-            }
-            m._kalan += ist;
+        const bas = new Date(m.bas).getTime();
+        for (const it of m.loot || []) { const k = { m, bas, n: adNorm(it.ad), ist: it.adet || 1 }; kalemler.push(k); }
+    }
+    for (const s of kalan) {
+        while (s.kal > 0) {
+            let en = null;
+            for (const k of kalemler) if (k.ist > 0 && k.n === s.n && k.bas <= s.t && (!en || k.bas > en.bas)) en = k;
+            if (!en) break;
+            const al = Math.min(s.kal, en.ist);
+            s.kal -= al; en.ist -= al;
+            en.m._gelir += al * (s.fiyat || 0);
+            en.m._satilan += al;
         }
     }
+    for (const k of kalemler) k.m._kalan += k.ist;
     const donguler = [];
     let cur = { tamir: 0, puan: 0, seferler: [] };
     let onceki = null;
@@ -94,7 +95,7 @@ export async function loadDroneEkonomi() {
     const net = top.gelir - top.tamir;
     let html = `<div class="archived-exp-card">`;
     html += `<div class="archived-exp-header"><span class="archived-exp-merc">Total${droneArsiv && droneArsiv.drone ? ' · ' + esc(droneArsiv.drone) : ''}</span><span style="font-weight:bold;color:${renk(net)};">${isaret(net)}</span></div>`;
-    html += satir('Runs', `${top.sefer} (${donguler.filter((c) => c.bitti).length} times down to 0)`);
+    html += satir('Runs', `${top.sefer} (${donguler.filter((c) => c.bitti).length} × down to 0)`);
     html += satir('Loot sold', cr(top.gelir), 'color:var(--accent-orange);');
     html += satir('Repairs paid', top.tamir ? '-' + cr(top.tamir) : '0 CR', top.tamir ? 'color:var(--accent-red);' : '');
     html += satir('Net per run', top.sefer ? isaret(net / top.sefer) : '-', `color:${renk(net)};`);
