@@ -39,11 +39,12 @@ function satisEsle(kayitlar, satis) {
         for (const it of k.esya) {
             it.satilan = 0;
             it.cr = 0;
-            if (!k.t) continue;
+            const alt = k.bas || k.t;
+            if (!alt) continue;
             const n = adNorm(it.ad);
             for (const s of kalan) {
                 if (it.satilan >= it.adet) break;
-                if (s.kal <= 0 || s.n !== n || s.t < k.t) continue;
+                if (s.kal <= 0 || s.n !== n || s.t < alt) continue;
                 const al = Math.min(s.kal, it.adet - it.satilan);
                 s.kal -= al;
                 it.satilan += al;
@@ -148,10 +149,10 @@ function renderArchivedExpeditions(data, droneArsiv, satis) {
         const rawContainer = exp.containerData || exp.container;
         const containerItems = Array.isArray(rawContainer) ? rawContainer : (rawContainer && Array.isArray(rawContainer.items) ? rawContainer.items : []);
         const esya = containerItems.map((ci) => { const det = ci.item || ci; return { ad: det.name || det.id, adet: det.quantity || ci.quantity || 1, resim: det.imageUrl || det.image || '', tier: det.tier, isCollected: det.isCollected, isDeleted: det.isDeleted }; });
-        kayitlar.push({ tip: 'exp', exp, esya, t: exp.completedAt ? new Date(exp.completedAt).getTime() : 0 });
+        kayitlar.push({ tip: 'exp', exp, esya, t: exp.completedAt ? new Date(exp.completedAt).getTime() : 0, bas: exp.startTime ? new Date(exp.startTime).getTime() : 0 });
     }
     for (const m of (droneArsiv && droneArsiv.liste) || []) {
-        kayitlar.push({ tip: 'drone', m, esya: (m.loot || []).map((x) => ({ ...x })), t: m.bit ? new Date(m.bit).getTime() : 0 });
+        kayitlar.push({ tip: 'drone', m, esya: (m.loot || []).map((x) => ({ ...x })), t: m.bit ? new Date(m.bit).getTime() : 0, bas: m.bas ? new Date(m.bas).getTime() : 0 });
     }
     if (kayitlar.length === 0) {
         archivedExpContainer.replaceChildren(_noData('No archived expeditions found.'));
