@@ -234,7 +234,7 @@ export function setupWsRelay() {
                     _automationFinish('auto-send');
                     return;
                 }
-                chrome.storage.local.get(['mercenariesData', 'usolMercenariesData', 'mercConfigData', 'expeditionConfigData', 'usolExpeditionConfigData', 'gorevEsya', 'kararGuvenli'], (localData) => {
+                chrome.storage.local.get(['mercenariesData', 'usolMercenariesData', 'mercConfigData', 'expeditionConfigData', 'usolExpeditionConfigData', 'gorevEsya', 'kararGuvenli', 'fiyatEngel'], (localData) => {
                     let coreMercs = [];
                     const coreRaw = localData.mercenariesData;
                     if (coreRaw) {
@@ -273,6 +273,8 @@ export function setupWsRelay() {
                     ((usolData && usolData.eliteSlots) || []).forEach(es => { if (es.mercenary) elitIds.add(es.mercenary.id); });
                     const dokunma = new Set(settings.autoSendMerc.dokunma || []);
                     for (let i = allMercs.length - 1; i >= 0; i--) if (allMercs[i]._isElite || elitIds.has(allMercs[i].id) || dokunma.has(allMercs[i].id)) allMercs.splice(i, 1);
+                    const fiyatEngel = localData.fiyatEngel || {};
+                    if (settings.autoSendMerc.autoChooseMerc) for (let i = allMercs.length - 1; i >= 0; i--) { const e = fiyatEngel[allMercs[i].id]; if (e && e.bitis > Date.now()) allMercs.splice(i, 1); }
                     let mercId = settings.autoSendMerc.mercenaryId;
 
                     if (settings.autoSendMerc.autoChooseMerc) {
@@ -611,6 +613,29 @@ export function setupWsRelay() {
                 setAutoSendInProgress(false);
                 _automationFinish('auto-send');
             }
+        }
+        if (event.data && event.data.type === 'COR3_LAUNCH_COST_BLOCKED') {
+            const mid = event.data.mercenaryId;
+            console.log('[COR3 Helper] Auto-send: launch blocked, real cost', event.data.cost, '> cap', event.data.tavan);
+            chrome.storage.local.get(['fiyatEngel', 'mercConfigData'], (r) => {
+                const fe = r.fiyatEngel || {};
+                const simdi = Date.now();
+                for (const k of Object.keys(fe)) if (!(fe[k].bitis > simdi)) delete fe[k];
+                if (mid) fe[mid] = { bitis: simdi + 3 * 3600000, ucret: event.data.cost, tavan: event.data.tavan, t: simdi };
+                const yaz = { fiyatEngel: fe, mercWarning: 'Launch blocked: real cost ' + (event.data.cost == null ? 'unknown' : event.data.cost.toLocaleString()) + ' > cap ' + event.data.tavan.toLocaleString() + '. Merc skipped for 3 h.' };
+                if (mid && event.data.data && typeof event.data.data.totalCost === 'number') {
+                    const cfg = r.mercConfigData || {};
+                    cfg[mid] = event.data.data;
+                    yaz.mercConfigData = cfg;
+                }
+                chrome.storage.local.set(yaz);
+            });
+            chrome.storage.local.remove(['lastExpeditionLaunchData', 'expeditionLaunched']);
+            setAutoSendExpeditionBlocked(false);
+            chrome.storage.local.remove('autoSendExpeditionBlocked');
+            setAutoSendInProgress(false);
+            _automationFinish('auto-send');
+            setAutoSendExpeditionId(null);
         }
         if (event.data && event.data.type === 'COR3_WS_EXPEDITION_LAUNCHED') {
             console.log('[COR3 Helper] Expedition launched successfully');

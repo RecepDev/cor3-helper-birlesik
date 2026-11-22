@@ -463,6 +463,14 @@ export function proceedWithMerc(mercId, allMercs, settings, localData) {
         goalId: goal.id,
         hasInsurance: false
     };
+    const as = (settings && settings.autoSendMerc) || {};
+    if (as.autoChooseMerc) {
+        const sinirlar = [];
+        const t = isUsol ? (as.tavanUsol || 0) : (as.tavanCore || 0);
+        if (t > 0) sinirlar.push(t);
+        if (as.yalnizUcuz) sinirlar.push((isUsol ? 6000 : 2500) - 1);
+        if (sinirlar.length) launchConfig.__tavan = Math.min(...sinirlar);
+    }
     console.log('[COR3 Helper] Auto-send: launching expedition with mercenary:', selectedMerc.callsign, '(' + (isUsol ? 'USOL' : 'CORE') + ')');
     setTimeout(() => {
         chrome.storage.local.set({ lastExpeditionLaunchData: launchConfig });

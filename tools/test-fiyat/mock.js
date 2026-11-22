@@ -1,0 +1,11 @@
+const dinle = [];
+globalThis.gonderilen = [];
+globalThis.mesajlar = [];
+globalThis.window = globalThis;
+globalThis.addEventListener = (t, f) => { if (t === 'message') dinle.push(f); };
+globalThis.removeEventListener = (t, f) => { const i = dinle.indexOf(f); if (i !== -1) dinle.splice(i, 1); };
+globalThis.postMessage = (data) => { mesajlar.push(data); setTimeout(() => dinle.slice().forEach(f => f({ data, source: globalThis })), 0); };
+globalThis.WebSocket = function () {}; WebSocket.OPEN = 1;
+globalThis.document = { addEventListener() {}, readyState: 'complete', createElement: () => ({}), documentElement: {} };
+globalThis.location = { href: 'https://cor3.gg/' };
+globalThis.localStorage = { getItem: () => null, setItem() {} };

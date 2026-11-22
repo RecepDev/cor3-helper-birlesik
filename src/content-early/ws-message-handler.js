@@ -280,6 +280,12 @@ export function handleWsMessage(rawData, socket) {
 
     // Intercept mercenary configure response (cost/risk/chances)
     if (eventName === 'expeditions' && payload && payload.event && payload.event.action === 'configure') {
+        var lq = window.__cor3PendingMercConfigures || [], lk = lq.indexOf('__launch');
+        if (lk !== -1) {
+            lq.splice(0, lk + 1);
+            window.postMessage({ type: 'COR3_WS_LAUNCH_CONFIGURE', data: payload.data, error: payload.error || null }, '*');
+            return;
+        }
         var mercId = (window.__cor3PendingMercConfigures && window.__cor3PendingMercConfigures.length > 0)
             ? window.__cor3PendingMercConfigures.shift() : null;
         window.postMessage({

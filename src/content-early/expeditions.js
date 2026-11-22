@@ -479,8 +479,42 @@ window.__cor3LaunchExpedition = function (configData) {
     var serverId = null;
     if (marketId === USOL_MARKET_ID) serverId = USOL_SERVER_ID;
 
+    var tavan = configData.__tavan || 0;
+    if ('__tavan' in configData) { configData = Object.assign({}, configData); delete configData.__tavan; }
     function doConfigureAndLaunch() {
         var configureMsg = '42["event",{"event":{"name":"expeditions","action":"configure"},"data":' + JSON.stringify(configData) + '}]';
+        if (tavan > 0) {
+            var bitti = false;
+            var onCfg = function (evt) {
+                if (bitti || !evt.data || evt.data.type !== 'COR3_WS_LAUNCH_CONFIGURE') return;
+                bitti = true;
+                window.removeEventListener('message', onCfg);
+                clearTimeout(cfgTimeout);
+                var c = evt.data.data || {};
+                if (typeof c.totalCost !== 'number' || c.totalCost > tavan) {
+                    console.log('[COR3 Helper] Launch blocked: real cost', c.totalCost, '> cap', tavan);
+                    window.postMessage({ type: 'COR3_LAUNCH_COST_BLOCKED', mercenaryId: configData.mercenaryId, cost: c.totalCost, tavan: tavan, data: c }, '*');
+                    return;
+                }
+                setTimeout(function () {
+                    wsSend('42["event",{"event":{"name":"expeditions","action":"launch"},"data":' + JSON.stringify(configData) + '}]');
+                    console.log('[COR3 Helper] Expedition launch sent (cost ' + c.totalCost + ' <= cap ' + tavan + ')');
+                }, humanDelay() + 500);
+            };
+            window.addEventListener('message', onCfg);
+            var cfgTimeout = setTimeout(function () {
+                if (bitti) return;
+                bitti = true;
+                window.removeEventListener('message', onCfg);
+                var q = window.__cor3PendingMercConfigures, k = q.indexOf('__launch');
+                if (k !== -1) q.splice(k, 1);
+                console.log('[COR3 Helper] Launch blocked: no configure answer, cost unknown');
+                window.postMessage({ type: 'COR3_LAUNCH_COST_BLOCKED', mercenaryId: configData.mercenaryId, cost: null, tavan: tavan }, '*');
+            }, 10000);
+            window.__cor3PendingMercConfigures.push('__launch');
+            wsSend(configureMsg);
+            return;
+        }
         wsSend(configureMsg);
         // After configure, launch after a delay (launch needs same data as configure)
         setTimeout(function () {
