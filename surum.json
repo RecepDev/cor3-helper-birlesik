@@ -1,4 +1,4 @@
 {
-  "surum": "1.23.1",
-  "notlar": "Drone Economy: satışlar artık satıştan önce başlamış en yeni sefere bağlanır (aynı adlı eşya eski sefere yazılmıyordu)."
+  "surum": "1.23.2",
+  "notlar": "Popup açıkken asker kararları artık Hiç risk alma, öldürme ve karar deneyi kurallarına uyuyor (önceden popup kendi puanıyla riskli seçebiliyordu)."
 }

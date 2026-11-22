@@ -403,6 +403,10 @@ export async function checkAutoChoose(decisions) {
     if (!autoChoose || !autoChoose.checked) return;
     if (!decisions || decisions.length === 0) return;
 
+    // Same rules as content/background auto-choose: kill list, decision experiment, "never take risks"
+    const { expeditionsData, olumMerc, kararDeney, kararGuvenli } = await chrome.storage.local.get(['expeditionsData', 'olumMerc', 'kararDeney', 'kararGuvenli']);
+    const guvenli = !!kararGuvenli;
+
     for (const d of decisions) {
         if (d.isResolved || !d.decisionDeadline || !Array.isArray(d.decisionOptions)) continue;
         if (autoChosenDecisions.has(d.messageId)) continue;
@@ -414,11 +418,13 @@ export async function checkAutoChoose(decisions) {
         const noWait = noWaitCb && noWaitCb.checked;
         if (!noWait && remaining > 60000) continue;
 
+        const olumExp = d.expeditionId && (expeditionsData || []).find(e => e.id === d.expeditionId);
+        const olum = !!(olumExp && olumExp.mercenary && (olumMerc || {})[olumExp.mercenary.id]) || (!guvenli && !!kararDeney && parseInt(String(d.expeditionId || '0').slice(-1), 16) % 2 === 0);
         const vetOverride = isVeteranExpedition(d.expeditionId);
         let bestOpt = null;
         let bestScore = -Infinity;
         for (const opt of d.decisionOptions) {
-            const score = calcOptionScore(opt, d.riskScore, vetOverride);
+            const score = olum ? opt.riskModifier : guvenli ? -opt.riskModifier * 1000 + opt.lootModifier : calcOptionScore(opt, d.riskScore, vetOverride);
             if (score > bestScore) {
                 bestScore = score;
                 bestOpt = opt;
