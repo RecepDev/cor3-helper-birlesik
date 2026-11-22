@@ -66,6 +66,7 @@ export function setupWsRelay() {
         }
         if (event.data && event.data.type === 'COR3_WS_DECISIONS') {
             chrome.storage.local.set({ expeditionDecisions: event.data.decisions });
+            askerKararSakla(event.data.decisions);
             checkAutoChooseFromContent(event.data.decisions);
         }
         if (event.data && event.data.type === 'COR3_WS_SPECIALISTS') {
@@ -160,6 +161,13 @@ export function setupWsRelay() {
         }
         if (event.data && event.data.type === 'COR3_WS_ARCHIVED_EXPEDITIONS') {
             chrome.storage.local.set({ archivedExpeditionsData: event.data.data, archivedExpeditionsUpdatedAt: now });
+            try {
+                askerKararSakla(((event.data.data && event.data.data.items) || []).flatMap(function (e) {
+                    return (e.messages || []).filter(function (m) { return m.decisionOptions; }).map(function (m) {
+                        return Object.assign({}, m, { messageId: m.id, expeditionId: e.id, mercenaryCallsign: e.mercenary && (e.mercenary.callsign || e.mercenary.name), locationName: e.locationName, zoneName: e.zoneName });
+                    });
+                }));
+            } catch (x) {}
         }
         if (event.data && event.data.type === 'COR3_WS_MERCENARIES') {
             chrome.storage.local.set({ mercenariesData: event.data.data, mercenariesUpdatedAt: now });
@@ -738,4 +746,29 @@ export function setupWsRelay() {
             });
         }
     });
+}
+
+function askerKararSakla(liste) {
+    var yeni = (liste || []).filter(function (d) { return d && d.messageId && d.isResolved && d.selectedOption; });
+    if (!yeni.length) return;
+    try {
+        chrome.storage.local.get('askerKarar', function (g) {
+            var l = (g && g.askerKarar) || [];
+            var var_ = {};
+            l.forEach(function (x) { if (x.tur === 'asker') var_[x.id] = 1; });
+            var ek = 0;
+            yeni.forEach(function (d) {
+                if (var_[d.messageId]) return;
+                ek++;
+                l.push({
+                    tur: 'asker', id: d.messageId, gorevId: d.expeditionId, t: Date.parse(d.createdAt || '') || Date.now(),
+                    sureDoldu: !!d.isAutoResolved, asker: d.mercenaryCallsign, yer: [d.locationName, d.zoneName].filter(Boolean).join(' / '),
+                    mesaj: d.content || '',
+                    secenekler: (d.decisionOptions || []).map(function (o) { return { id: o.id, ad: o.label || o.id, risk: o.riskModifier || 0, loot: o.lootModifier || 0 }; }),
+                    secilen: d.selectedOption
+                });
+            });
+            if (ek) chrome.storage.local.set({ askerKarar: l.sort(function (a, b) { return a.t - b.t; }).slice(-400) });
+        });
+    } catch (x) {}
 }

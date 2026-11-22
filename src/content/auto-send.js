@@ -514,6 +514,18 @@ window.addEventListener('message', (e) => {
     } catch (x) {}
 });
 window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.type !== 'COR3_DRONE_KARAR' || !isContextValid()) return;
+    const k = e.data.kayit;
+    if (!k || !k.id) return;
+    try {
+        chrome.storage.local.get('droneKarar', (g) => {
+            const l = ((g && g.droneKarar) || []).filter((x) => !(x.tur === 'drone' && x.id === k.id));
+            l.push(k);
+            chrome.storage.local.set({ droneKarar: l.slice(-400) });
+        });
+    } catch (x) {}
+});
+window.addEventListener('message', (e) => {
     if (e.source !== window || !e.data || e.data.type !== 'COR3_WS_MAIL_ALINDI') return;
     console.log('[COR3 Helper] Mail claim.all result:', e.data.error ? JSON.stringify(e.data.error) : 'ok');
     setTimeout(() => window.postMessage({ type: 'COR3_REQUEST_STASH' }, '*'), 3000);

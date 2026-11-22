@@ -35,6 +35,18 @@ function arsivYaz(d) {
     try { window.postMessage({ type: 'COR3_DRONE_ARSIV', arsiv: { t: Date.now(), drone: secenek && secenek.drone && secenek.drone.name, liste: liste } }, '*'); } catch (x) {}
 }
 
+function kararKaydet(a, e, secilen, oto, cesur) {
+    try {
+        window.postMessage({ type: 'COR3_DRONE_KARAR', kayit: {
+            tur: 'drone', id: e.eventId, gorevId: a.id, t: Date.now(), oto: oto, riskli: !!cesur,
+            drone: secenek && secenek.drone && secenek.drone.name, yer: a.location && a.location.name, gorev: a.mission && a.mission.name,
+            tip: e.type, mesaj: e.message || '',
+            secenekler: (e.options || []).map(function (o) { return { id: o.id, ad: o.label || o.id, risk: (o.effect && o.effect.riskDelta) || 0, loot: (o.effect && o.effect.lootDelta) || 0, modul: !!o.requiredModuleId }; }),
+            secilen: secilen
+        } }, '*');
+    } catch (x) {}
+}
+
 function kurZaman() {
     if (acik) setTimeout(sor, 6000);
 }
@@ -58,6 +70,16 @@ window.addEventListener('message', function (e) {
             var p = JSON.parse(e.data.message.substring(2));
             var d = p[1] && p[1].data;
             if (d && d.locationConfigId && d.missionConfigId) localStorage.setItem(SAKLA, JSON.stringify({ locationConfigId: d.locationConfigId, missionConfigId: d.missionConfigId }));
+        } catch (x) {}
+    }
+    if (e.data.type === 'COR3_WS_LOG' && e.data.direction === 'sent' && typeof e.data.message === 'string' && e.data.message.indexOf('drone-missions') > 0 && e.data.message.indexOf('"resolve.event"') > 0) {
+        try {
+            var q = JSON.parse(e.data.message.substring(2));
+            var r = q[1] && q[1].data;
+            if (r && r.eventId && !cozulen[r.eventId] && aktif && aktif.id === r.missionId) {
+                var olay = (aktif.channelEvents || []).find(function (x) { return x.eventId === r.eventId; });
+                if (olay) { cozulen[r.eventId] = 1; kararKaydet(aktif, olay, r.optionId, false, false); }
+            }
         } catch (x) {}
     }
 });
@@ -96,6 +118,7 @@ function kararVer(a) {
         });
         cozulen[e.eventId] = 1;
         son.karar = Date.now();
+        kararKaydet(a, e, ops[0].id, true, cesur);
         console.log('[COR3 Helper] Drone: decision "' + (e.message || e.eventId) + '" -> ' + (ops[0].label || ops[0].id) + (cesur ? ' (risky)' : ''));
         setTimeout(function (mid, eid, oid) { gonder('resolve.event', { missionId: mid, eventId: eid, optionId: oid }); }, 1500 + Math.floor(Math.random() * 2000), a.id, e.eventId, ops[0].id);
         return true;

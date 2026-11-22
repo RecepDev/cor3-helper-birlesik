@@ -2746,3 +2746,19 @@
             color: var(--accent-orange);
             cursor: default;
         }
+
+        .karar-gecmis-bas { display: flex; gap: 6px; align-items: center; margin: 10px 0 6px; }
+        .karar-gecmis-bas .market-sub-label { flex: 1; }
+        .karar-gecmis-bas select, .karar-gecmis-bas input { font-size: 10px; background: var(--bg-option); color: var(--text-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; }
+        .karar-gecmis-bas input { width: 90px; }
+        .kg-kart { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; font-size: 10px; }
+        .kg-ust { display: flex; justify-content: space-between; color: var(--accent-cyan); margin-bottom: 3px; }
+        .kg-mesaj { color: var(--text-secondary); margin-bottom: 4px; line-height: 1.35; }
+        .kg-sec { display: flex; justify-content: space-between; padding: 2px 6px; border-radius: 4px; background: var(--bg-option); margin-bottom: 2px; color: var(--text-muted); }
+        .kg-sec.secildi { border: 1px solid var(--accent-green); color: var(--accent-yellow); font-weight: bold; }
+        .kg-etiket { font-size: 9px; padding: 0 4px; border-radius: 3px; margin-left: 4px; border: 1px solid var(--border); color: var(--text-dim); }
+        .kg-etiket.riskli { border-color: var(--accent-orange); color: var(--accent-orange); }
+        .kg-sonuc-FULL_SUCCESS { color: var(--accent-green); }
+        .kg-sonuc-PARTIAL_SUCCESS { color: var(--accent-yellow); }
+        .kg-sonuc-FAIL, .kg-sonuc-CRITICAL_FAIL { color: var(--accent-red); }
+        .kg-daha { text-align: center; color: var(--accent-cyan); cursor: pointer; font-size: 10px; padding: 4px; }

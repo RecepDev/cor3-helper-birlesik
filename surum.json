@@ -1,4 +1,4 @@
 {
-  "surum": "1.23.3",
-  "notlar": "Paralı asker market üst limiti artık fırlatmadan hemen önce gerçek fiyatla kontrol ediliyor: oyun seçim sırasında düşük fiyat gösterip gönderimde yüksek fiyat alırsa (ör. USOL VETERAN 13.766 görünüp 32.775 alındı) gönderim yapılmaz, asker 3 saat atlanır."
+  "surum": "1.24.0",
+  "notlar": "Decisions: History list (drone + merc decisions kept, filter and search); drone decisions recorded with auto/risky tag and outcome"
 }
